@@ -3,164 +3,357 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>СИНЯЯ ИЗОЛЕНТА</title>
+    <meta name="theme-color" content="#0052cc">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <title>СИНЯЯ ИЗОЛЕНТА | Инженерный календарь</title>
+    
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
     
     <style>
-        /* --- ЦВЕТОВЫЕ ТЕМЫ --- */
-        :root { --p: #0038a8; --bg: #f3f4f6; --card: #ffffff; --text: #1f2937; }
-        .theme-dark { --p: #3b82f6; --bg: #111827; --card: #1f2937; --text: #f9fafb; }
-        .theme-oil { --p: #92400e; --bg: #1c1917; --card: #292524; --text: #e7e5e4; }
+        :root {
+            /* Тема 1: Classic Engineering (Blue) */
+            --bg-color: #f4f7f6;
+            --panel-bg: #ffffff;
+            --accent-color: #0052cc;
+            --text-main: #2c3e50;
+            --border-color: #d1d8e0;
+            --card-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
 
-        body { font-family: -apple-system, system-ui, sans-serif; margin: 0; background: var(--bg); color: var(--text); padding-bottom: 80px; transition: 0.3s; }
-        
-        /* ШАПКА И ЛОГО (SVG) */
-        header { background: var(--p); color: white; padding: 15px; display: flex; align-items: center; justify-content: space-between; sticky: top; z-index: 100; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
-        .logo { display: flex; align-items: center; gap: 8px; }
-        
-        /* СТРУКТУРА СТРАНИЦ */
-        .page { display: none; padding: 15px; max-width: 600px; margin: 0 auto; animation: fadeIn 0.3s; }
+        /* Темы оформления */
+        body.theme-dark {
+            --bg-color: #1a1a1a; --panel-bg: #2d2d2d; --accent-color: #3498db; --text-main: #e0e0e0; --border-color: #444;
+        }
+        body.theme-grease {
+            --bg-color: #2b2622; --panel-bg: #3d352f; --accent-color: #f39c12; --text-main: #ecf0f1; --border-color: #5d534a;
+        }
+        body.theme-blueprint {
+            --bg-color: #003366; --panel-bg: #004080; --accent-color: #ffffff; --text-main: #ffffff; --border-color: rgba(255,255,255,0.3);
+        }
+        body.theme-safety {
+            --bg-color: #000000; --panel-bg: #1a1a1a; --accent-color: #ffff00; --text-main: #ffffff; --border-color: #ffff00;
+        }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body {
+            margin: 0; font-family: 'Roboto', sans-serif; background-color: var(--bg-color);
+            color: var(--text-main); transition: all 0.3s ease; overflow-x: hidden;
+        }
+
+        /* Navigation */
+        nav {
+            position: fixed; bottom: 0; left: 0; width: 100%; background: var(--panel-bg);
+            display: flex; justify-content: space-around; padding: 10px 0;
+            border-top: 2px solid var(--accent-color); z-index: 1000;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+        }
+        .nav-item {
+            display: flex; flex-direction: column; align-items: center;
+            font-size: 10px; cursor: pointer; color: var(--text-main); opacity: 0.6;
+        }
+        .nav-item.active { opacity: 1; color: var(--accent-color); }
+
+        /* Content Container */
+        main { padding: 20px; padding-bottom: 80px; max-width: 1200px; margin: 0 auto; }
+        .page { display: none; animation: fadeIn 0.4s ease; }
         .page.active { display: block; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-        .card { background: var(--card); border-radius: 12px; padding: 15px; margin-bottom: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); border-left: 5px solid var(--p); }
-        h2 { margin: 0 0 10px 0; font-size: 1.1rem; text-transform: uppercase; color: var(--p); }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* КАЛЕНДАРЬ СЕТКОЙ */
-        .cal-head { display: grid; grid-template-cols: repeat(7, 1fr); text-align: center; font-weight: bold; font-size: 11px; margin-bottom: 5px; opacity: 0.6; }
-        .cal-grid { display: grid; grid-template-cols: repeat(7, 1fr); gap: 4px; }
-        .day { aspect-ratio: 1/1; display: flex; flex-direction: column; align-items: center; justify-content: center; background: var(--card); border-radius: 8px; font-size: 14px; position: relative; border: 1px solid rgba(0,0,0,0.05); }
-        .day.today { background: var(--p); color: white; font-weight: bold; }
-        .day.holiday { color: #ef4444; }
-        .holiday-tag { font-size: 7px; position: absolute; bottom: 2px; width: 90%; text-align: center; overflow: hidden; }
+        /* UI Elements */
+        .card {
+            background: var(--panel-bg); border: 1px solid var(--border-color);
+            border-radius: 8px; padding: 15px; margin-bottom: 15px; box-shadow: var(--card-shadow);
+        }
+        h2 { border-left: 4px solid var(--accent-color); padding-left: 10px; margin-top: 0; }
+        input, select, button {
+            width: 100%; padding: 12px; margin: 5px 0; border: 1px solid var(--border-color);
+            border-radius: 5px; background: var(--panel-bg); color: var(--text-main);
+        }
+        button { background: var(--accent-color); color: white; border: none; font-weight: bold; cursor: pointer; }
 
-        /* ТАБЛИЦЫ */
-        .t-wrap { overflow-x: auto; }
-        table { width: 100%; border-collapse: collapse; font-size: 13px; }
-        th { background: var(--p); color: white; padding: 10px; text-align: left; }
-        td { padding: 10px; border-bottom: 1px solid rgba(0,0,0,0.1); }
+        /* Page Specific: Calendar */
+        .calendar-grid {
+            display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; text-align: center;
+        }
+        .day { padding: 10px 2px; border-radius: 4px; font-size: 14px; }
+        .day.weekend { color: #e74c3c; font-weight: bold; }
+        .day.holiday { background: rgba(231, 76, 60, 0.2); border: 1px solid #e74c3c; }
+        .day.today { background: var(--accent-color); color: white; }
+        .murphy-box { font-style: italic; border-top: 1px dashed var(--accent-color); margin-top: 20px; padding: 10px; font-size: 0.9em; }
 
-        /* НАВИГАЦИЯ */
-        nav { position: fixed; bottom: 0; width: 100%; background: var(--card); display: flex; justify-content: space-around; padding: 10px 0; border-top: 2px solid var(--p); z-index: 1000; }
-        .n-btn { background: none; border: none; font-size: 20px; color: var(--text); opacity: 0.4; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 2px; }
-        .n-btn.active { opacity: 1; color: var(--p); transform: scale(1.1); }
-        .n-btn span { font-size: 9px; font-weight: bold; }
+        /* Page Specific: Reference Tables */
+        .table-scroll { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; font-family: 'JetBrains Mono', monospace; font-size: 13px; }
+        th, td { border: 1px solid var(--border-color); padding: 8px; text-align: left; }
+        th { background: rgba(0,0,0,0.05); }
 
-        input { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #ccc; margin: 10px 0; box-sizing: border-box; }
+        /* Responsive Design */
+        @media (min-width: 768px) {
+            nav { top: 0; bottom: auto; flex-direction: column; width: 70px; height: 100vh; padding: 20px 0; }
+            main { margin-left: 80px; }
+            .calendar-grid { gap: 10px; }
+        }
+
+        /* Floating Settings Button */
+        .fab { position: fixed; right: 20px; top: 20px; z-index: 1001; background: var(--accent-color); color: white; width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
+        
+        #modal-settings {
+            display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 2000; align-items: center; justify-content: center;
+        }
     </style>
 </head>
 <body>
 
-<header>
-    <div class="logo">
-        <svg width="30" height="30" viewBox="0 0 100 100">
-            <rect x="10" y="30" width="80" height="40" rx="5" fill="white" transform="rotate(-10 50 50)"/>
-            <text x="50" y="65" font-family="Arial" font-size="30" font-weight="bold" fill="#0038a8" text-anchor="middle" transform="rotate(-10 50 50)">Si</text>
-        </svg>
-        <b>СИНЯЯ ИЗОЛЕНТА</b>
+    <div class="fab" onclick="toggleSettings()"><i data-lucide="settings"></i></div>
+
+    <nav id="main-nav">
+        <div class="nav-item active" onclick="showPage('p-cal')"><i data-lucide="calendar"></i><span>Календарь</span></div>
+        <div class="nav-item" onclick="showPage('p-chat')"><i data-lucide="message-square"></i><span>Чат</span></div>
+        <div class="nav-item" onclick="showPage('p-stock')"><i data-lucide="package"></i><span>Склад</span></div>
+        <div class="nav-item" onclick="showPage('p-ref')"><i data-lucide="book-open"></i><span>Справочник</span></div>
+        <div class="nav-item" onclick="showPage('p-obd')"><i data-lucide="alert-triangle"></i><span>OBD-II</span></div>
+        <div class="nav-item" onclick="showPage('p-ai')"><i data-lucide="cpu"></i><span>AI</span></div>
+        <div class="nav-item" onclick="showPage('p-joke')"><i data-lucide="laugh"></i><span>Юмор</span></div>
+    </nav>
+
+    <main>
+        <section id="p-cal" class="page active">
+            <div class="card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <button onclick="changeMonth(-1)" style="width: 50px;">&lt;</button>
+                    <h2 id="cal-title" style="border:none; margin:0;">Январь 2024</h2>
+                    <button onclick="changeMonth(1)" style="width: 50px;">&gt;</button>
+                </div>
+                <div class="calendar-grid" id="calendar-body">
+                    </div>
+                <div class="murphy-box">
+                    <strong>Закон дня:</strong>
+                    <p id="murphy-quote">Если всё идет по плану, значит, вы чего-то не заметили.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="p-chat" class="page">
+            <h2>Групповой совет</h2>
+            <div class="card" id="chat-box" style="height: 300px; overflow-y: auto; margin-bottom: 10px; background: #eee; color: #333; font-size: 0.9em;">
+                <div style="padding: 5px;"><strong>Админ:</strong> Коллеги, кто подскажет момент затяжки ГБЦ на D24?</div>
+            </div>
+            <div style="display: flex; gap: 5px;">
+                <input type="text" placeholder="Введите сообщение...">
+                <button style="width: 70px;"><i data-lucide="send"></i></button>
+            </div>
+        </section>
+
+        <section id="p-stock" class="page">
+            <h2>Склад под верстаком</h2>
+            <select id="stock-filter">
+                <option>У меня есть</option>
+                <option>Мне нужно</option>
+                <option>Могу поделиться</option>
+            </select>
+            <div id="stock-list">
+                <div class="card">
+                    <strong>Динамометрический ключ (10-110 Нм)</strong>
+                    <div style="font-size: 0.8em; color: gray;">Категория: Инструмент | Владелец: Иван</div>
+                </div>
+            </div>
+            <button>+ Добавить позицию</button>
+        </section>
+
+        <section id="p-ref" class="page">
+            <h2>Резьбы и подшипники</h2>
+            <input type="text" placeholder="Поиск по размеру (например, M12)..." onkeyup="filterTable()">
+            <div class="table-scroll card">
+                <table>
+                    <thead><tr><th>Тип</th><th>Размер</th><th>Шаг</th><th>Сверло, мм</th></tr></thead>
+                    <tbody id="ref-table-body">
+                        <tr><td>Метрическая</td><td>M6</td><td>1.0</td><td>5.0</td></tr>
+                        <tr><td>Метрическая</td><td>M8</td><td>1.25</td><td>6.8</td></tr>
+                        <tr><td>Метрическая</td><td>M10</td><td>1.5</td><td>8.5</td></tr>
+                        <tr><td>Дюймовая</td><td>1/4" UNC</td><td>20 TPI</td><td>5.1</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section id="p-obd" class="page">
+            <h2>Диагностика</h2>
+            <div style="display: flex; gap: 5px;">
+                <input type="text" id="obd-search" placeholder="Код ошибки (P0101, 520204...)">
+                <button onclick="searchOBD()" style="width: 100px;">Поиск</button>
+            </div>
+            <div id="obd-result" class="card" style="margin-top: 15px;">
+                Введите код для получения расшифровки...
+            </div>
+        </section>
+
+        <section id="p-ai" class="page">
+            <h2>Инженерный интеллект</h2>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                <button onclick="window.open('https://gemini.google.com')">Gemini</button>
+                <button onclick="window.open('https://notebooklm.google.com')">NotebookLM</button>
+            </div>
+            <div class="card" style="margin-top: 15px;">
+                <h3>Промпт недели:</h3>
+                <code style="display:block; background:#f0f0f0; color: #333; padding: 10px; border-radius: 5px;">
+                    "Рассчитай необходимое сечение кабеля для 12В системы при токе 40А и длине линии 5 метров с падением напряжения не более 3%..."
+                </code>
+            </div>
+        </section>
+
+        <section id="p-joke" class="page">
+            <h2>Технический юмор</h2>
+            <div class="card">
+                <p>— Почему механики не любят левшей?<br>— Потому что у них резьба в другую сторону в голове!</p>
+                <div style="text-align: right; color: var(--accent-color);">Rating: +42</div>
+            </div>
+            <button>😂 Рассказать свой</button>
+        </section>
+    </main>
+
+    <div id="modal-settings">
+        <div class="card" style="width: 90%; max-width: 400px;">
+            <h3>Настройки</h3>
+            <label>Тема оформления:</label>
+            <select onchange="setTheme(this.value)">
+                <option value="default">Синяя Изолента (Классика)</option>
+                <option value="theme-dark">Ночная смена</option>
+                <option value="theme-grease">В масле (Гараж)</option>
+                <option value="theme-blueprint">Чертеж</option>
+                <option value="theme-safety">Техника безопасности</option>
+            </select>
+            
+            <div style="margin-top: 20px; text-align: center;">
+                <p>Синхронизация (QR-код):</p>
+                <img id="qr-code" src="" alt="QR" style="width: 150px; border: 5px solid white;">
+            </div>
+            
+            <button onclick="toggleSettings()" style="margin-top: 20px;">Закрыть</button>
+        </div>
     </div>
-    <select onchange="document.body.className=this.value" style="background:none; color:white; border:1px solid white; border-radius:4px; font-size:10px;">
-        <option value="">Классика</option>
-        <option value="theme-dark">Ночь</option>
-        <option value="theme-oil">Масло</option>
-    </select>
-</header>
 
-<main>
-    <section id="p1" class="page active">
-        <div class="card">
-            <h2 id="month-title">Февраль 2026</h2>
-            <div class="cal-head">
-                <div>Пн</div><div>Вт</div><div>Ср</div><div>Чт</div><div>Пт</div><div style="color:red">Сб</div><div style="color:red">Вс</div>
-            </div>
-            <div id="cal-body" class="cal-grid"></div>
-        </div>
-        <div class="card" style="border-left-color: #f59e0b;">
-            <small>💡 Бритва Оккама:</small>
-            <p id="quote" style="margin:5px 0 0 0; font-style: italic; font-size: 13px;"></p>
-        </div>
-    </section>
+    <script>
+        // --- Инициализация иконок ---
+        lucide.createIcons();
 
-    <section id="p4" class="page">
-        <h2>⚙️ Справочник механика</h2>
-        <div class="card">
-            <h3>Метрическая резьба</h3>
-            <div class="t-wrap">
-                <table>
-                    <tr><th>Размер</th><th>Шаг</th><th>Сверло</th></tr>
-                    <tr><td>M6</td><td>1.0</td><td>5.0 мм</td></tr>
-                    <tr><td>M8</td><td>1.25</td><td>6.8 мм</td></tr>
-                    <tr><td>M10</td><td>1.5</td><td>8.5 мм</td></tr>
-                    <tr><td>M12</td><td>1.75</td><td>10.2 мм</td></tr>
-                </table>
-            </div>
-        </div>
-        <div class="card">
-            <h3>Подшипники (Серия 200)</h3>
-            <div class="t-wrap">
-                <table>
-                    <tr><th>№</th><th>d</th><th>D</th><th>B</th></tr>
-                    <tr><td>203</td><td>17</td><td>40</td><td>12</td></tr>
-                    <tr><td>204</td><td>20</td><td>47</td><td>14</td></tr>
-                    <tr><td>205</td><td>25</td><td>52</td><td>15</td></tr>
-                </table>
-            </div>
-        </div>
-    </section>
-
-    <section id="p5" class="page">
-        <h2>⚠️ Коды DTC</h2>
-        <input type="text" id="dtc-search" placeholder="Поиск кода (напр. P0300)..." oninput="search(this.value)">
-        <div id="dtc-res"></div>
-    </section>
-</main>
-
-<nav>
-    <button class="n-btn active" onclick="show(1)">📅<span>КАЛЕНДАРЬ</span></button>
-    <button class="n-btn" onclick="show(4)">⚙️<span>СПРАВКА</span></button>
-    <button class="n-btn" onclick="show(5)">⚠️<span>ОШИБКИ</span></button>
-    <button class="n-btn" onclick="alert('Чат требует настройки Firebase!')">💬<span>ЧАТ</span></button>
-</nav>
-
-<script>
-    const holidays = {"01-01":"Новый год","01-07":"Рождество","03-08":"8 Марта","05-09":"День Победы"};
-    const quotes = ["Если работает — не трогай.", "Ищи самое простое решение.", "Деталь не лезет? Нужен молоток."];
-    const dtc = {"P0101":"Датчик расхода воздуха","P0300":"Пропуски зажигания","P0171":"Бедная смесь"};
-
-    function show(n) {
-        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-        document.querySelectorAll('.n-btn').forEach(b => b.classList.remove('active'));
-        document.getElementById('p'+n).classList.add('active');
-        event.currentTarget.classList.add('active');
-    }
-
-    function renderCal() {
-        const grid = document.getElementById('cal-body');
-        const now = new Date();
-        const daysInMonth = new Date(now.getFullYear(), now.getMonth()+1, 0).getDate();
-        let firstDay = new Date(now.getFullYear(), now.getMonth(), 1).getDay();
-        firstDay = firstDay === 0 ? 6 : firstDay - 1;
-
-        grid.innerHTML = '';
-        for(let i=0; i<firstDay; i++) grid.innerHTML += '<div></div>';
-        for(let d=1; d<=daysInMonth; d++) {
-            const dateStr = `0${now.getMonth()+1}-${d < 10 ? '0'+d : d}`;
-            const isToday = d === now.getDate();
-            const h = holidays[dateStr.slice(-5)];
-            grid.innerHTML += `<div class="day ${isToday?'today':''} ${h?'holiday':''}">
-                ${d}${h ? `<span class="holiday-tag">${h}</span>` : ''}
-            </div>`;
+        // --- Навигация ---
+        function showPage(pageId) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            document.getElementById(pageId).classList.add('active');
+            event.currentTarget.classList.add('active');
+            window.scrollTo(0,0);
         }
-        document.getElementById('quote').innerText = quotes[Math.floor(Math.random()*quotes.length)];
-    }
 
-    function search(q) {
-        const res = document.getElementById('dtc-res');
-        res.innerHTML = '';
-        for(let k in dtc) if(k.includes(q.toUpperCase())) res.innerHTML += `<div class="card"><b>${k}:</b> ${dtc[k]}</div>`;
-    }
+        // --- Календарь ---
+        let currentDate = new Date();
+        const holidays = ["01-01", "01-07", "03-08", "05-01", "05-09", "07-03", "11-07", "12-25"];
+        const murphyQuotes = [
+            "Всё, что может пойти не так, пойдет не так.",
+            "Предоставленные самим себе, события имеют тенденцию развиваться от плохого к худшему.",
+            "Если кажется, что всё хорошо, вы просто чего-то не заметили.",
+            "Бритва Оккама: Не следует множить сущее без необходимости."
+        ];
 
-    window.onload = renderCal;
-</script>
+        function renderCalendar() {
+            const body = document.getElementById('calendar-body');
+            const title = document.getElementById('cal-title');
+            body.innerHTML = '';
+            
+            const year = currentDate.getFullYear();
+            const month = currentDate.getMonth();
+            title.innerText = new Intl.DateTimeFormat('ru-RU', {month:'long', year:'numeric'}).format(currentDate);
 
+            // Заголовки дней недели
+            ['Пн','Вт','Ср','Чт','Пт','Сб','Вс'].forEach(d => {
+                body.innerHTML += `<div style="font-weight:bold; opacity:0.5">${d}</div>`;
+            });
+
+            const firstDay = new Date(year, month, 1).getDay();
+            const offset = firstDay === 0 ? 6 : firstDay - 1;
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+            for(let i=0; i<offset; i++) body.innerHTML += '<div></div>';
+
+            for(let d=1; d<=daysInMonth; d++) {
+                const dateStr = `${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+                const isHoliday = holidays.includes(dateStr);
+                const isToday = new Date().toDateString() === new Date(year, month, d).toDateString();
+                const dayOfWeek = new Date(year, month, d).getDay();
+                const isWeekend = (dayOfWeek === 0 || dayOfWeek === 6);
+                
+                body.innerHTML += `
+                    <div class="day ${isHoliday?'holiday':''} ${isToday?'today':''} ${isWeekend?'weekend':''}">
+                        ${d}
+                    </div>`;
+            }
+            
+            // Ротация цитат
+            document.getElementById('murphy-quote').innerText = murphyQuotes[d % murphyQuotes.length];
+        }
+
+        function changeMonth(delta) {
+            currentDate.setMonth(currentDate.getMonth() + delta);
+            renderCalendar();
+        }
+
+        // --- Настройки и Темы ---
+        function toggleSettings() {
+            const m = document.getElementById('modal-settings');
+            const isVisible = m.style.display === 'flex';
+            m.style.display = isVisible ? 'none' : 'flex';
+            if(!isVisible) {
+                const url = encodeURIComponent(window.location.href);
+                document.getElementById('qr-code').src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${url}`;
+            }
+        }
+
+        function setTheme(theme) {
+            document.body.className = theme === 'default' ? '' : theme;
+            localStorage.setItem('pref-theme', theme);
+        }
+
+        // --- OBD Поиск ---
+        function searchOBD() {
+            const code = document.getElementById('obd-search').value.toUpperCase();
+            const result = document.getElementById('obd-result');
+            const db = {
+                "P0101": "Выход сигнала датчика массового расхода воздуха из диапазона.",
+                "P0300": "Случайные/множественные пропуски зажигания.",
+                "520204": "Ошибка давления масла (MTZ/John Deere специфик)."
+            };
+            result.innerHTML = db[code] ? `<strong>Результат:</strong><br>${db[code]}` : "Код не найден в локальной базе. Проверьте подключение к сети.";
+        }
+
+        // --- Offline / PWA Service Worker Stub ---
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                // В реальном PWA здесь регистрация sw.js
+                console.log('PWA Ready');
+            });
+        }
+
+        // --- Запуск ---
+        renderCalendar();
+        const savedTheme = localStorage.getItem('pref-theme');
+        if(savedTheme) setTheme(savedTheme);
+
+        // Реализация жестов (свайп)
+        let touchStart = 0;
+        document.addEventListener('touchstart', e => touchStart = e.changedTouches[0].screenX);
+        document.addEventListener('touchend', e => {
+            let touchEnd = e.changedTouches[0].screenX;
+            if (touchStart - touchEnd > 100) changeMonth(1); // Свайп влево
+            if (touchEnd - touchStart > 100) changeMonth(-1); // Свайп вправо
+        });
+        
+        // Синхронизация между вкладками (BroadcastChannel API)
+        const bc = new BroadcastChannel('sync_channel');
+        bc.onmessage = (ev) => {
+            if(ev.data === 'update') location.reload();
+        };
+    </script>
 </body>
 </html>
