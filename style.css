@@ -1,83 +1,37 @@
-:root {
-    --blue-tape: #0047ab; /* Синяя изолента */
-    --galvanized: #b8c2c9; /* Оцинковка */
-    --used-oil: #1a1a1a; /* Отработка */
-    --rusty: #8b4513; /* Ржавчина */
-    --nixie-neon: #ff8c00; /* Неон ИН-14 */
-}
+:root { --zinc: #f4f4f5; --artel: #003399; }
+.theme-oil { --zinc: #09090b; --artel: #27272a; color: #fff; }
+.theme-rust { --zinc: #1c1917; --artel: #7c2d12; color: #fff; }
+.theme-neon { --zinc: #020617; --artel: #1e3a8a; color: #38bdf8; }
 
-body {
-    background-color: var(--used-oil);
-    color: var(--galvanized);
-    font-family: 'Courier New', monospace;
-    margin: 0;
-    display: grid;
-    grid-template-columns: 1fr 300px;
-    height: 100vh;
-}
+body { background-color: var(--zinc); font-family: 'Inter', sans-serif; transition: 0.5s cubic-bezier(0.4, 0, 0.2, 1); }
 
-header {
-    grid-column: 1 / -1;
-    background: linear-gradient(180deg, #333, #1a1a1a);
-    border-bottom: 4px solid var(--blue-tape);
-    padding: 10px;
-}
+.artel-card { background: white; border-radius: 2px; border: 1px solid rgba(0,0,0,0.1); border-bottom: 3px solid var(--artel); }
+.theme-oil .artel-card { background: #18181b; border-color: #3f3f46; }
 
-.logo-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 20px;
+/* ИН-14 Неоновая лампа */
+.in14-lamp {
+    position: fixed; top: 12px; right: 80px; width: 28px; height: 44px;
+    background: #222; border-radius: 14px 14px 4px 4px;
+    display: flex; align-items: center; justify-content: center;
+    color: #ff5500; font-family: serif; font-size: 1.2rem;
+    box-shadow: 0 0 10px #ff550033, inset 0 2px 5px #000;
+    opacity: 0.2; z-index: 100; transition: 0.4s;
 }
+.in14-lamp.active { opacity: 1; text-shadow: 0 0 8px #ff5500, 0 0 15px #ff0000; animation: glow 1.5s infinite; }
 
-nav {
-    display: flex;
-    overflow-x: auto;
-    gap: 5px;
-    padding-top: 10px;
-}
+@keyframes glow { 0%, 100% { opacity: 1; } 50% { opacity: 0.7; } }
 
-button {
-    background: var(--galvanized);
-    border: 2px solid #555;
-    padding: 10px;
-    cursor: pointer;
-    font-weight: bold;
-    text-transform: uppercase;
+/* Тумблер ПУСК */
+.toggle-pusker { position: relative; width: 70px; height: 36px; }
+.toggle-pusker input { display: none; }
+.toggle-pusker label {
+    display: block; width: 100%; height: 100%; background: #333;
+    border-radius: 3px; cursor: pointer; text-align: center;
+    line-height: 36px; color: #fff; font-size: 9px; font-weight: 900;
+    box-shadow: inset 0 4px 8px rgba(0,0,0,0.4); transition: 0.2s;
 }
+.toggle-pusker input:checked + label { background: #003399; transform: scale(0.95); box-shadow: 0 0 15px #003399; }
 
-/* Кнопка ПУСК (Тумблер) */
-.btn-launch {
-    background: #444;
-    border: 4px inset #222;
-    color: var(--nixie-neon);
-    padding: 15px 30px;
-    font-size: 1.2rem;
-}
-
-/* Кнопка ГОСТно */
-.btn-gost {
-    background: none;
-    border: 2px solid var(--rusty);
-    color: var(--galvanized);
-}
-.btn-gost:before { content: "👍 (в мазуте) "; }
-
-/* Лампа ИН-14 */
-#nixie-tube {
-    position: fixed;
-    top: 10px;
-    right: 10px;
-    width: 30px;
-    height: 50px;
-    border-radius: 10px 10px 0 0;
-    background: rgba(255, 140, 0, 0.1);
-    box-shadow: 0 0 15px var(--nixie-neon);
-    z-index: 1000;
-}
-
-/* Адаптивность */
-@media (max-width: 768px) {
-    body { grid-template-columns: 1fr; }
-    aside { display: none; }
-}
+[x-cloak] { display: none !important; }
+.custom-scroll::-webkit-scrollbar { width: 4px; }
+.custom-scroll::-webkit-scrollbar-thumb { background: var(--artel); border-radius: 10px; }
