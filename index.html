@@ -4,102 +4,98 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>АРТЕЛЬ ФОРДОВА И БЕНЦОВА</title>
+    
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
     <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
-    <link rel="stylesheet" href="css/style.css">
+
     <style>
         [x-cloak] { display: none !important; }
-        :root { --blue-tape: #0047ab; --neon-in14: #ff5e00; --galvanized: #bdc3c7; }
-        body { background: #1a1a1a; color: var(--galvanized); font-family: 'Courier New', monospace; margin: 0; padding-bottom: 70px; }
+        :root { --blue-tape: #0047ab; --neon-orange: #ff5e00; --steel: #bdc3c7; }
+        body { background: #1a1a1a; color: var(--steel); font-family: 'Courier New', monospace; margin: 0; padding-bottom: 80px; transition: 0.3s; }
+        
+        /* Темы */
+        .theme-rust { background: #3d1a00; }
+        .theme-oil { background: #000; color: #555; }
+
         .page { display: none; padding: 20px; }
         .active { display: block !important; }
-        .gost-card { border: 1px solid var(--blue-tape); padding: 15px; margin-bottom: 10px; background: rgba(0,71,171,0.05); }
-        .nav-bar { position: fixed; bottom: 0; width: 100%; background: #000; display: flex; justify-content: space-around; padding: 10px 0; border-top: 2px solid var(--blue-tape); }
-        .active-nav { color: var(--neon-in14) !important; }
-        .neon-text { color: var(--neon-in14); text-shadow: 0 0 5px var(--neon-in14); }
+        .gost-card { border: 1px solid var(--blue-tape); padding: 15px; margin-bottom: 10px; background: rgba(0,71,171,0.1); border-radius: 2px; }
+        
+        .nav-bar { position: fixed; bottom: 0; width: 100%; background: #000; display: flex; justify-content: space-around; padding: 15px 0; border-top: 2px solid var(--blue-tape); z-index: 1000; }
+        .nav-item { color: var(--steel); cursor: pointer; }
+        .active-nav { color: var(--neon-orange) !important; }
+        
+        .btn-pusker { background: var(--blue-tape); color: white; border: none; padding: 10px 20px; font-weight: bold; cursor: pointer; }
+        input { background: #222; border: 1px solid var(--blue-tape); color: white; padding: 10px; }
+        
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { border: 1px solid #444; padding: 8px; text-align: center; }
+        th { background: var(--blue-tape); color: white; }
     </style>
 </head>
 <body x-data="artelCore" x-cloak :class="theme">
 
-    <header style="text-align: center; border-bottom: 2px solid var(--blue-tape); padding: 10px;">
-        <h2 style="margin: 0; font-size: 1.1rem;">🛠 АРТЕЛЬ ФОРДОВА И БЕНЦОВА</h2>
+    <header style="text-align: center; border-bottom: 2px solid var(--blue-tape); padding: 10px; background: #000;">
+        <h2 style="margin: 0; font-size: 1rem; letter-spacing: 2px;">🛠 АРТЕЛЬ ФОРДОВА И БЕНЦОВА 🛠</h2>
     </header>
 
     <div :class="{ 'active': page === 1 }" class="page">
         <div class="gost-card">
-            <div class="neon-text" x-text="currentHoliday"></div>
-            <div style="font-size: 0.8rem; font-style: italic;" x-text="dailyQuote"></div>
+            <div style="color: var(--neon-orange); font-weight: bold;" x-text="currentHoliday"></div>
+            <div style="font-size: 0.8rem; font-style: italic; margin-top: 5px;" x-text="'«' + dailyQuote + '»'"></div>
         </div>
-        <h3 class="neon-text">УСТАВ "СИНЯЯ ИЗОЛЕНТА"</h3>
-        <template x-for="z in zapovedi">
-            <div class="gost-card" style="font-size: 0.9rem;" x-text="z"></div>
+        <h3 style="color: var(--neon-orange);">УСТАВ АРТЕЛИ</h3>
+        <template x-for="(z, i) in zapovedi" :key="i">
+            <div class="gost-card" style="font-size: 0.85rem;" x-text="(i+1) + '. ' + z"></div>
         </template>
     </div>
 
     <div :class="{ 'active': page === 2 }" class="page">
-        <h3 class="neon-text">РАДИОРУБКА</h3>
-        <div style="height: 300px; overflow-y: auto; border: 1px solid var(--blue-tape); padding: 10px; margin-bottom: 10px;">
+        <h3 style="color: var(--neon-orange);">РАДИОРУБКА</h3>
+        <div style="height: 300px; overflow-y: auto; border: 1px solid var(--blue-tape); padding: 10px; background: #000; margin-bottom: 10px;">
             <template x-for="m in messages">
-                <div style="margin-bottom: 5px; border-left: 2px solid var(--blue-tape); padding-left: 5px;">
-                    <b x-text="m.username" class="neon-text"></b>: <span x-text="m.text"></span>
+                <div style="margin-bottom: 10px; border-left: 3px solid var(--blue-tape); padding-left: 8px;">
+                    <small x-text="m.username" style="color: var(--neon-orange);"></small><br>
+                    <span x-text="m.text"></span>
                 </div>
             </template>
         </div>
-        <input type="text" x-model="msg" @keyup.enter="sendMsg" placeholder="Доклад..." style="width: 80%; background: #000; color: #fff; border: 1px solid var(--blue-tape); padding: 10px;">
-        <button @click="sendMsg" style="background: var(--blue-tape); color: #fff; padding: 10px;">ПУСК</button>
-    </div>
-
-    <div :class="{ 'active': page === 3 }" class="page">
-        <h3 class="neon-text">ЗАНАЧКА</h3>
-        <div class="gost-card">📦 Биржа Дефицита</div>
-        <div class="gost-card">💡 Вредные советы</div>
-        <div class="gost-card">📜 Чертежный архив</div>
+        <div style="display: flex; gap: 5px;">
+            <input type="text" x-model="msg" style="flex: 1;" placeholder="Приём...">
+            <button @click="sendMsg" class="btn-pusker">ПУСК</button>
+        </div>
     </div>
 
     <div :class="{ 'active': page === 4 }" class="page">
-        <h3 class="neon-text">ГОСТ ТАБЛИЦА (РЕЗЬБЫ)</h3>
+        <h3 style="color: var(--neon-orange);">СПРАВОЧНИК РЕЗЬБ</h3>
         
-        <table style="width: 100%; border: 1px solid var(--blue-tape); text-align: center;">
-            <tr style="background: var(--blue-tape);"><th>M</th><th>Шаг</th><th>Сверло</th></tr>
-            <template x-for="r in rezba">
-                <tr><td x-text="r.m"></td><td x-text="r.s"></td><td x-text="r.d" class="neon-text"></td></tr>
-            </template>
+        <table>
+            <thead><tr><th>M</th><th>Шаг</th><th>Сверло</th></tr></thead>
+            <tbody>
+                <template x-for="r in rezba">
+                    <tr><td x-text="r.m"></td><td x-text="r.s"></td><td x-text="r.d" style="color: var(--neon-orange);"></td></tr>
+                </template>
+            </tbody>
         </table>
-        <h3 class="neon-text" style="margin-top:20px;">ОШИБКИ OBD-II</h3>
-        <input type="text" x-model="obdQuery" placeholder="P0300" style="width:100%; padding:10px; background:#000; border:1px solid var(--blue-tape); color:#fff;">
-        <div x-text="scanOBD()" style="margin-top:10px; color: var(--neon-in14);"></div>
-    </div>
-
-    <div :class="{ 'active': page === 5 }" class="page">
-        <h3 class="neon-text">ИИ-ВЕРСТАК</h3>
-        <p style="font-size: 0.7rem;">* Требуется VPN</p>
-        <div class="gost-card"><a href="https://gemini.google.com" style="color: #fff;">Gemini AI</a></div>
-        <div class="gost-card"><a href="https://suno.com" style="color: #fff;">Suno Music</a></div>
-    </div>
-
-    <div :class="{ 'active': page === 6 }" class="page">
-        <h3 class="neon-text">ГЕНЕРАТОР ИДЕЙ</h3>
-        <div class="gost-card" x-text="currentPrompt"></div>
-        <button @click="shufflePrompt" style="width:100%; padding:10px; background: var(--blue-tape); color:#fff;">ОБНОВИТЬ</button>
-    </div>
-
-    <div :class="{ 'active': page === 7 }" class="page">
-        <h3 class="neon-text">ГАРАЖНЫЙ ЮМОР</h3>
-        <div class="gost-card" x-text="currentJoke"></div>
-        <button @click="shuffleJoke" style="width:100%; padding:10px; background: var(--blue-tape); color:#fff;">ЕЩЕ!</button>
+        
+        <h3 style="color: var(--neon-orange); margin-top: 20px;">OBD-II КОДЫ</h3>
+        <input type="text" x-model="obdQuery" placeholder="P0300" style="width: 100%; box-sizing: border-box;">
+        <div style="margin-top: 10px; padding: 10px; background: #000; border: 1px solid var(--neon-orange);" x-text="scanOBD()"></div>
     </div>
 
     <div :class="{ 'active': page === 8 }" class="page">
-        <h3 class="neon-text">НАСТРОЙКИ</h3>
-        <label>Тема оформления:</label>
-        <select x-model="theme" @change="setTheme($el.value)" style="width:100%; padding:10px; background:#000; color:#fff;">
-            <option value="theme-classic">Синяя изолента</option>
-            <option value="theme-oil">Отработанное масло</option>
-            <option value="theme-rust">Ржавое железо</option>
-        </select>
-        <div id="qrcode" style="margin-top: 20px; display: flex; justify-content: center; background: #fff; padding: 10px;"></div>
+        <h3 style="color: var(--neon-orange);">НАСТРОЙКИ</h3>
+        <div class="gost-card">
+            <label>Тема:</label>
+            <select x-model="theme" @change="setTheme($el.value)" style="width: 100%; padding: 10px; background: #222; color: white; border: 1px solid var(--blue-tape);">
+                <option value="theme-classic">Синяя изолента</option>
+                <option value="theme-oil">Мазут (Dark)</option>
+                <option value="theme-rust">Ржавчина</option>
+            </select>
+        </div>
+        <div id="qrcode" style="display: flex; justify-content: center; background: white; padding: 10px; margin-top: 20px;"></div>
     </div>
 
     <nav class="nav-bar">
@@ -110,6 +106,63 @@
         </template>
     </nav>
 
-    <script src="js/app.js"></script>
+    <script>
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('artelCore', () => ({
+                page: 1,
+                theme: localStorage.getItem('artel_theme') || 'theme-classic',
+                username: 'Инженер-' + Math.floor(Math.random() * 99),
+                msg: '',
+                messages: [{username: 'Система', text: 'Связь установлена. Добро пожаловать в Артель.'}],
+                obdQuery: '',
+                currentHoliday: 'Рабочая смена',
+                dailyQuote: 'Если не работает — возьми рычаг больше.',
+                navIcons: ['home', 'message-circle', 'package', 'wrench', 'zap', 'brain-circuit', 'laugh', 'settings'],
+                
+                zapovedi: ["ТБ — не догма, а рекомендация.", "Синяя изолента лечит всё.", "Лишняя деталь — это оптимизация."],
+                rezba: [{m:'M6', s:'1.0', d:'5.0'}, {m:'M8', s:'1.25', d:'6.8'}, {m:'M10', s:'1.5', d:'8.5'}],
+
+                init() {
+                    lucide.createIcons();
+                    this.updateStats();
+                    this.generateQR();
+                    // Инициализация Supabase (без вылета при ошибке)
+                    try {
+                        const sb = supabase.createClient('https://grsszunlfmehyykkvccj.supabase.co', 'ZTEGCDF4981E');
+                        sb.from('artel_messages').select('*').limit(10).then(({data}) => { if(data) this.messages = data; });
+                    } catch(e) {}
+                },
+
+                updateStats() {
+                    const holidays = {"01-01": "Новый год", "05-09": "День Победы", "07-03": "День Независимости РБ"};
+                    const day = new Date().toISOString().slice(5,10);
+                    this.currentHoliday = holidays[day] || "Обычный день в гараже";
+                },
+
+                sendMsg() {
+                    if(!this.msg) return;
+                    this.messages.push({username: this.username, text: this.msg});
+                    this.msg = '';
+                },
+
+                scanOBD() {
+                    const codes = {"P0300": "Пропуски зажигания", "P0171": "Бедная смесь"};
+                    return codes[this.obdQuery.toUpperCase()] || "Код не найден. Проверь контакты.";
+                },
+
+                setTheme(t) {
+                    this.theme = t;
+                    localStorage.setItem('artel_theme', t);
+                },
+
+                generateQR() {
+                    const qr = qrcode(0, 'M');
+                    qr.addData(window.location.href);
+                    qr.make();
+                    document.getElementById('qrcode').innerHTML = qr.createImgTag(4);
+                }
+            }));
+        });
+    </script>
 </body>
 </html>
