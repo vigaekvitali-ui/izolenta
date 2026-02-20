@@ -160,3 +160,19 @@
 
 </body>
 </html>
+// Добавьте в объект pages
+pages.settings = `
+    <div class="card">
+        <h2>⚙️ НАСТРОЙКИ ОБОРУДОВАНИЯ</h2>
+        <p>Тема оформления:</p>
+        <select onchange="document.body.className = this.value" style="padding:10px; width:100%;">
+            <option value="theme-standard">Стандартная (Мазут)</option>
+            <option value="theme-rust">Ржавый гараж</option>
+            <option value="theme-clean">Чистый бокс (Светлая)</option>
+            <option value="theme-neon">Ночная смена (Неон)</option>
+            <option value="theme-tape">Синяя изолента (Extreme)</option>
+        </select>
+        <br><br>
+        <button class="btn-toggle" onclick="alert('Данные экспортированы в .bolt файл')">Экспорт данных</button>
+    </div>
+`;
