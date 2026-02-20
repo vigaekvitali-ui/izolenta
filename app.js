@@ -1,92 +1,99 @@
+// КОНФИГУРАЦИЯ ОБЛАКА
+const SB_URL = 'grsszunlfmehyykkvccj';
+const SB_KEY = 'ZTEGCDF4981E';
+const supabase = (SB_URL.includes('your-project')) ? null : supabase.createClient(SB_URL, SB_KEY);
+
 document.addEventListener('alpine:init', () => {
     Alpine.data('artelCore', () => ({
         page: 1,
         theme: localStorage.getItem('artel_theme') || 'theme-classic',
         online: navigator.onLine,
         myId: localStorage.getItem('artel_id') || 'ART-' + Math.random().toString(36).substr(2, 6).toUpperCase(),
-        username: localStorage.getItem('artel_user') || 'МАСТЕР-' + Math.floor(Math.random() * 999),
-        msg: '',
-        messages: JSON.parse(localStorage.getItem('artel_msgs') || '[]'),
-        hasNotice: false,
-        noticeCount: 1,
-        obdQuery: '',
-
-        navIcons: ['home', 'message-circle', 'package', 'wrench', 'zap', 'brain-circuit', 'laugh', 'settings'],
+        username: localStorage.getItem('artel_user') || 'Инженер-' + Math.floor(Math.random() * 99),
         
-        themes: [
-            {name:'Изолента', val:'theme-classic', color:'#003399'},
-            {name:'Мазут', val:'theme-oil', color:'#1a1a1a'},
-            {name:'Ржавчина', val:'theme-rust', color:'#7c2d12'},
-            {name:'Неон', val:'theme-neon', color:'#0f172a'}
-        ],
+        msg: '',
+        messages: [],
+        inventory: [],
+        
+        hasNotice: false,
+        obdQuery: '',
+        navIcons: ['home', 'message-circle', 'package', 'wrench', 'zap', 'brain-circuit', 'laugh', 'settings'],
 
-        zapovedi: [
-            "ТБ — не догма, а рекомендация: Но запасных пальцев не выдают.",
-            "Закон лишней детали: Остались болты — машина стала легче.",
-            "Синяя изолента — универсальный клей мироздания.",
-            "Инструмент — святое: взял ключ — верни чистым. Взял изоленту — найди край!",
-            "Мат — производственный ускоритель процессов.",
-            "«На глазок» — точнейший прибор в руках мастера.",
-            "Никогда не сдавайся: не крутится — бери рычаг больше.",
-            "Обмыл — значит, закрепил узел. Без заземления всё сгниет."
-        ],
+        // Данные Артели
+        zapovedi: ["ТБ — не догма, а рекомендация.", "Закон лишней детали — оптимизация веса.", "Синяя изолента лечит всё.", "Инструмент — святое.", "Мат — ускоритель процесса.", "«На глазок» — точнейший прибор.", "Не крутится — бери рычаг больше.", "Обмыл — значит, закрепил."],
+        rezba: [{m:'M6', s:'1.0', d:'5.0'}, {m:'M8', s:'1.25', d:'6.8'}, {m:'M10', s:'1.5', d:'8.5'}],
+        themes: [{name:'Изолента', val:'theme-classic', color:'#003399'}, {name:'Мазут', val:'theme-oil', color:'#1a1a1a'}, {name:'Ржавчина', val:'theme-rust', color:'#7c2d12'}],
 
-        rezba: [
-            {m:'M6', s:'1.0', d:'5.0'}, {m:'M8', s:'1.25', d:'6.8'}, 
-            {m:'M10', s:'1.5', d:'8.5'}, {m:'M12', s:'1.75', d:'10.2'}
-        ],
+        async init() {
+            lucide.createIcons();
+            document.body.className = this.theme;
+            this.generateQR();
 
-        merphyQuote: "Если деталь не лезет — возьми молоток побольше. Если она сломалась — значит, всё равно подлежала замене.",
-        currentDateLabel: new Date().toLocaleDateString('ru-BY', { weekday: 'short', day: 'numeric', month: 'short' }),
+            // 1. Загрузка данных из облака
+            await this.fetchCloudData();
 
-        scanOBD() {
-            if(!this.obdQuery) return "ОЖИДАНИЕ ВВОДА...";
-            const codes = {"P0101":"ДМРВ: Неверный сигнал. Продуй фильтр.","P0300":"Пропуски зажигания. Смотри катушки.","E12":"ГИДРАВЛИКА: Давление ниже нормы."};
-            return codes[this.obdQuery.toUpperCase()] || "КОД НЕ НАЙДЕН. ПРОБУЙ СИНЮЮ ИЗОЛЕНТУ.";
+            // 2. Подписка на Realtime (Облачная синхронизация)
+            if (supabase) {
+                supabase.channel('artel-live')
+                    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'artel_messages' }, payload => {
+                        this.messages.push(payload.new);
+                        if (payload.new.user_id !== this.myId) this.hasNotice = true;
+                    })
+                    .on('postgres_changes', { event: '*', schema: 'public', table: 'artel_inventory' }, () => {
+                        this.fetchInventory();
+                    })
+                    .subscribe();
+            }
+
+            window.addEventListener('online', () => this.online = true);
+            window.addEventListener('offline', () => this.online = false);
         },
 
-        sendMsg() {
-            if(!this.msg.trim()) return;
-            this.messages.push({ text: this.msg, user_id: this.myId, username: this.username });
-            this.msg = '';
-            localStorage.setItem('artel_msgs', JSON.stringify(this.messages));
+        async fetchCloudData() {
+            if (!supabase) return;
+            // Грузим сообщения
+            const { data: msgs } = await supabase.from('artel_messages').select('*').order('created_at', { ascending: true }).limit(50);
+            if (msgs) this.messages = msgs;
+            // Грузим склад
+            this.fetchInventory();
+        },
+
+        async fetchInventory() {
+            if (!supabase) return;
+            const { data } = await supabase.from('artel_inventory').select('*').order('created_at', { ascending: false });
+            if (data) this.inventory = data;
+        },
+
+        async sendMsg() {
+            if (!this.msg.trim()) return;
+            const newMsg = { text: this.msg, user_id: this.myId, username: this.username };
             
+            if (supabase) {
+                await supabase.from('artel_messages').insert([newMsg]);
+            } else {
+                this.messages.push(newMsg); // Локальный режим
+            }
+
+            this.msg = '';
             setTimeout(() => { document.getElementById('pusker').checked = false; }, 300);
-            this.$nextTick(() => { const b = document.getElementById('chat-box'); b.scrollTop = b.scrollHeight; });
+        },
+
+        async addToInventory(name) {
+            if (!name || !supabase) return;
+            await supabase.from('artel_inventory').insert([{ item_name: name, owner_id: this.myId }]);
         },
 
         generateQR() {
             const qr = qrcode(0, 'M');
-            qr.addData(window.location.href + '?invite=' + this.myId);
+            qr.addData(window.location.href);
             qr.make();
-            document.getElementById('qrcode').innerHTML = qr.createImgTag(4);
+            const el = document.getElementById('qrcode');
+            if (el) el.innerHTML = qr.createImgTag(4);
         },
 
-        init() {
-            lucide.createIcons();
-            this.generateQR();
-            window.addEventListener('online', () => this.online = true);
-            window.addEventListener('offline', () => this.online = false);
-
-            this.$watch('page', () => {
-                this.$nextTick(() => {
-                    lucide.createIcons();
-                    if(this.page === 8) this.generateQR();
-                    if(this.page === 2) { 
-                        const b = document.getElementById('chat-box'); 
-                        if(b) b.scrollTop = b.scrollHeight; 
-                    }
-                });
-            });
-
-            this.$watch('theme', v => {
-                localStorage.setItem('artel_theme', v);
-                document.body.className = v;
-            });
-            document.body.className = this.theme;
-
-            // Рандомное мерцание лампы
-            setInterval(() => { if(Math.random() > 0.8) this.hasNotice = !this.hasNotice; }, 5000);
+        scanOBD() {
+            const codes = {"P0101":"ДМРВ ошибка.","P0300":"Пропуски зажигания."};
+            return codes[this.obdQuery.toUpperCase()] || "КОД НЕ НАЙДЕН. МОТАЙ ИЗОЛЕНТУ.";
         }
     }));
 });
