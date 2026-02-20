@@ -1,37 +1,26 @@
-:root { --zinc: #f4f4f5; --artel: #003399; }
-.theme-oil { --zinc: #09090b; --artel: #27272a; color: #fff; }
-.theme-rust { --zinc: #1c1917; --artel: #7c2d12; color: #fff; }
-.theme-neon { --zinc: #020617; --artel: #1e3a8a; color: #38bdf8; }
-
-body { background-color: var(--zinc); font-family: 'Inter', sans-serif; transition: 0.5s cubic-bezier(0.4, 0, 0.2, 1); }
-
-.artel-card { background: white; border-radius: 2px; border: 1px solid rgba(0,0,0,0.1); border-bottom: 3px solid var(--artel); }
-.theme-oil .artel-card { background: #18181b; border-color: #3f3f46; }
-
-/* ИН-14 Неоновая лампа */
-.in14-lamp {
-    position: fixed; top: 12px; right: 80px; width: 28px; height: 44px;
-    background: #222; border-radius: 14px 14px 4px 4px;
-    display: flex; align-items: center; justify-content: center;
-    color: #ff5500; font-family: serif; font-size: 1.2rem;
-    box-shadow: 0 0 10px #ff550033, inset 0 2px 5px #000;
-    opacity: 0.2; z-index: 100; transition: 0.4s;
+:root {
+  --blue-tape: #0047ab; /* Синяя изолента */
+  --galvanized-steel: #bdc3c7; /* Оцинкованная сталь */
+  --used-oil: #1a1a1a; /* Отработанное масло */
+  --rusty-iron: #8b4513; /* Ржавое железо */
+  --neon-orange: #ff5e00; /* Индикатор ИН-14 */
 }
-.in14-lamp.active { opacity: 1; text-shadow: 0 0 8px #ff5500, 0 0 15px #ff0000; animation: glow 1.5s infinite; }
 
-@keyframes glow { 0%, 100% { opacity: 1; } 50% { opacity: 0.7; } }
-
-/* Тумблер ПУСК */
-.toggle-pusker { position: relative; width: 70px; height: 36px; }
-.toggle-pusker input { display: none; }
-.toggle-pusker label {
-    display: block; width: 100%; height: 100%; background: #333;
-    border-radius: 3px; cursor: pointer; text-align: center;
-    line-height: 36px; color: #fff; font-size: 9px; font-weight: 900;
-    box-shadow: inset 0 4px 8px rgba(0,0,0,0.4); transition: 0.2s;
+/* Стилизация кнопки ПУСК (Тумблер) */
+.toggle-launch {
+  appearance: none;
+  width: 60px;
+  height: 30px;
+  background: var(--used-oil);
+  border: 2px solid var(--blue-tape);
+  position: relative;
+  cursor: pointer;
 }
-.toggle-pusker input:checked + label { background: #003399; transform: scale(0.95); box-shadow: 0 0 15px #003399; }
 
-[x-cloak] { display: none !important; }
-.custom-scroll::-webkit-scrollbar { width: 4px; }
-.custom-scroll::-webkit-scrollbar-thumb { background: var(--artel); border-radius: 10px; }
+.toggle-launch:checked::before {
+  content: 'ПУСК';
+  color: var(--neon-orange);
+  text-shadow: 0 0 5px var(--neon-orange);
+  position: absolute;
+  left: 35px;
+}
