@@ -3,84 +3,87 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>АРТЕЛЬ ФОРДОВА И БЕНЦОВА</title>
+    <title>АРТЕЛЬ: ГЛАВНЫЙ ЦЕХ</title>
     
-    <script src="https://unpkg.com/lucide@latest"></script>
-    <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    <script src="https://unpkg.com/lucide@0.321.0/dist/umd/lucide.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
+    <script src="https://unpkg.com/alpinejs@3.13.5/dist/cdn.min.js" defer></script>
 
     <style>
         [x-cloak] { display: none !important; }
         :root { --blue-tape: #0047ab; --neon: #ff5e00; --steel: #bdc3c7; }
-        body { background: #1a1a1a; color: var(--steel); font-family: 'Courier New', monospace; margin: 0; padding-bottom: 80px; }
+        body { background: #111; color: var(--steel); font-family: 'Courier New', monospace; margin: 0; padding-bottom: 90px; }
         
-        .page { display: none; padding: 20px; animation: fadeIn 0.2s; }
+        .page { display: none; padding: 20px; }
         .active { display: block !important; }
-        .gost-card { border: 1px solid var(--blue-tape); padding: 15px; margin-bottom: 10px; background: rgba(0,71,171,0.1); }
         
-        .nav-bar { position: fixed; bottom: 0; width: 100%; background: #000; display: flex; justify-content: space-around; padding: 15px 0; border-top: 2px solid var(--blue-tape); z-index: 9999; }
-        .nav-item { color: var(--steel); cursor: pointer; padding: 5px 15px; }
-        .active-nav { color: var(--neon) !important; transform: scale(1.2); }
+        .gost-card { border: 1px solid var(--blue-tape); padding: 15px; margin-bottom: 10px; background: rgba(0,71,171,0.1); border-left: 4px solid var(--blue-tape); }
+        .neon-text { color: var(--neon); text-shadow: 0 0 5px var(--neon); }
         
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.8rem; }
-        th, td { border: 1px solid #444; padding: 8px; text-align: center; }
+        .nav-bar { position: fixed; bottom: 0; width: 100%; background: #000; display: flex; justify-content: space-around; padding: 15px 0; border-top: 2px solid var(--blue-tape); box-shadow: 0 -5px 15px rgba(0,0,0,0.5); }
+        .nav-item { color: #555; cursor: pointer; transition: 0.3s; }
+        .nav-item.active-nav { color: var(--neon); transform: translateY(-5px); }
+        
+        table { width: 100%; border-collapse: collapse; font-size: 0.8rem; margin-top: 10px; }
+        th, td { border: 1px solid #333; padding: 10px; text-align: center; }
         th { background: var(--blue-tape); color: white; }
+        input { width: 100%; padding: 12px; background: #000; border: 1px solid var(--blue-tape); color: white; box-sizing: border-box; }
     </style>
 </head>
 <body x-data="artelCore" x-cloak>
 
-    <header style="text-align: center; border-bottom: 2px solid var(--blue-tape); padding: 10px; background: #000;">
-        <h2 style="margin: 0; font-size: 0.9rem; letter-spacing: 1px;">🛠 АРТЕЛЬ: ГЛАВНЫЙ ЦЕХ 🛠</h2>
+    <header style="padding: 15px; text-align: center; background: #000; border-bottom: 1px solid var(--blue-tape);">
+        <h1 style="margin: 0; font-size: 1rem; letter-spacing: 2px;" class="neon-text">🛠 АРТЕЛЬ: ГЛАВНЫЙ ЦЕХ</h1>
     </header>
 
     <div :class="{ 'active': page === 1 }" class="page">
         <div class="gost-card">
-            <div style="color: var(--neon); font-weight: bold;" x-text="currentHoliday"></div>
+            <div class="neon-text" style="font-weight: bold;" x-text="currentHoliday"></div>
             <div style="font-size: 0.8rem; font-style: italic; margin-top: 5px;" x-text="dailyQuote"></div>
         </div>
-        <h3 style="color: var(--neon);">УСТАВ АРТЕЛИ</h3>
-        <template x-for="(z, i) in zapovedi">
-            <div class="gost-card" style="font-size: 0.8rem;" x-text="(i+1) + '. ' + z"></div>
+        <h3 class="neon-text">ЗАПОВЕДИ МАСТЕРОВ</h3>
+        <template x-for="(z, i) in zapovedi" :key="i">
+            <div class="gost-card" style="font-size: 0.85rem;" x-text="(i+1) + '. ' + z"></div>
         </template>
     </div>
 
     <div :class="{ 'active': page === 2 }" class="page">
-        <h3 style="color: var(--neon);">РАДИОРУБКА</h3>
-        <div style="height: 250px; overflow-y: auto; border: 1px solid var(--blue-tape); padding: 10px; background: #000; margin-bottom: 10px;">
+        <h3 class="neon-text">РАДИОРУБКА</h3>
+        <div style="height: 300px; overflow-y: auto; border: 1px solid var(--blue-tape); background: #000; padding: 10px; margin-bottom: 10px;">
             <template x-for="m in messages">
-                <div style="margin-bottom: 8px; border-left: 2px solid var(--blue-tape); padding-left: 8px;">
-                    <small x-text="m.user" style="color: var(--neon);"></small>:<br>
+                <div style="margin-bottom: 10px; border-left: 2px solid var(--blue-tape); padding-left: 10px;">
+                    <small class="neon-text" x-text="m.user"></small><br>
                     <span x-text="m.text"></span>
                 </div>
             </template>
         </div>
         <div style="display: flex; gap: 5px;">
-            <input type="text" x-model="msg" style="flex: 1; background: #222; color: white; border: 1px solid var(--blue-tape); padding: 10px;" placeholder="Сообщение...">
-            <button @click="sendMsg" style="background: var(--blue-tape); color: white; border: none; padding: 10px;">ПУСК</button>
+            <input type="text" x-model="msg" placeholder="Приём...">
+            <button @click="sendMsg" style="background: var(--blue-tape); border: none; color: white; padding: 0 20px;">ПУСК</button>
         </div>
     </div>
 
     <div :class="{ 'active': page === 4 }" class="page">
-        <h3 style="color: var(--neon);">ТАБЛИЦА РЕЗЬБ</h3>
+        <h3 class="neon-text">ГОСТ 24705 (РЕЗЬБЫ)</h3>
         
         <table>
             <thead><tr><th>M</th><th>Шаг</th><th>Сверло</th></tr></thead>
             <tbody>
                 <template x-for="r in rezba">
-                    <tr><td x-text="r.m"></td><td x-text="r.s"></td><td x-text="r.d" style="color: var(--neon);"></td></tr>
+                    <tr><td x-text="r.m"></td><td x-text="r.s"></td><td x-text="r.d" class="neon-text"></td></tr>
                 </template>
             </tbody>
         </table>
-        <h3 style="color: var(--neon); margin-top: 20px;">OBD-II</h3>
-        <input type="text" x-model="obdQuery" placeholder="Введите код (напр. P0300)" style="width: 100%; padding: 10px; background: #222; border: 1px solid var(--blue-tape); color: white; box-sizing: border-box;">
-        <div style="margin-top: 10px; padding: 10px; background: #000; border: 1px solid var(--neon);" x-text="scanOBD()"></div>
+        
+        <h3 class="neon-text" style="margin-top: 25px;">ДИАГНОСТИКА OBD-II</h3>
+        <input type="text" x-model="obdQuery" placeholder="P0300...">
+        <div style="margin-top: 10px; padding: 15px; background: #000; border: 1px solid var(--neon); min-height: 40px;" x-text="scanOBD()"></div>
     </div>
 
     <div :class="{ 'active': page === 8 }" class="page">
-        <h3 style="color: var(--neon);">ИНСТРУМЕНТЫ</h3>
-        <div id="qrcode" style="display: flex; justify-content: center; background: white; padding: 10px; border: 5px solid var(--blue-tape);"></div>
-        <p style="text-align: center; font-size: 0.7rem; margin-top: 10px;">QR ДЛЯ ПОДКЛЮЧЕНИЯ НАПАРНИКА</p>
+        <h3 class="neon-text">СВЯЗЬ И НАСТРОЙКИ</h3>
+        <div id="qrcode" style="display: flex; justify-content: center; background: #fff; padding: 15px; border: 4px solid var(--blue-tape);"></div>
+        <p style="text-align: center; font-size: 0.7rem; margin-top: 15px;">QR-КОД ДЛЯ ВХОДА С ДРУГОГО УСТРОЙСТВА</p>
     </div>
 
     <nav class="nav-bar">
@@ -95,41 +98,63 @@
             Alpine.data('artelCore', () => ({
                 page: 1,
                 msg: '',
-                messages: [{user: 'МАСТОДОНТ', text: 'Система готова к работе.'}],
+                messages: [{user: 'СИСТЕМА', text: 'Смена начата. Связь в норме.'}],
                 obdQuery: '',
-                currentHoliday: 'Обычный рабочий день',
-                dailyQuote: 'Если не затягивается — возьми рычаг больше.',
-                zapovedi: ["ТБ — не догма, а рекомендация.", "Синяя изолента лечит всё.", "Лишняя деталь — это оптимизация веса."],
-                rezba: [{m:'M6', s:'1.0', d:'5.0'}, {m:'M8', s:'1.25', d:'6.8'}, {m:'M10', s:'1.5', d:'8.5'}, {m:'M12', s:'1.75', d:'10.2'}],
+                currentHoliday: 'Будни в Артели',
+                dailyQuote: 'Если не крутится — возьми рычаг больше.',
+                
+                zapovedi: [
+                    "ТБ — не догма, а рекомендация.",
+                    "Синяя изолента лечит всё.",
+                    "Лишняя деталь — это оптимизация веса.",
+                    "Мат — ускоритель процесса."
+                ],
+                
+                rezba: [
+                    {m:'M6', s:'1.0', d:'5.0'}, 
+                    {m:'M8', s:'1.25', d:'6.8'}, 
+                    {m:'M10', s:'1.5', d:'8.5'}, 
+                    {m:'M12', s:'1.75', d:'10.2'}
+                ],
 
                 init() {
-                    lucide.createIcons();
+                    this.renderIcons();
                     this.generateQR();
                 },
 
                 setPage(p) {
                     this.page = p;
-                    // Даем Alpine время обновить DOM, затем перерисовываем иконки
-                    this.$nextTick(() => { lucide.createIcons(); });
+                    this.$nextTick(() => this.renderIcons());
+                },
+
+                renderIcons() {
+                    if (window.lucide) {
+                        lucide.createIcons();
+                    }
                 },
 
                 sendMsg() {
-                    if(!this.msg) return;
-                    this.messages.push({user: 'ИНЖЕНЕР', text: this.msg});
+                    if (!this.msg) return;
+                    this.messages.push({user: 'МАСТЕР', text: this.msg});
                     this.msg = '';
                 },
 
                 scanOBD() {
-                    const codes = {"P0300": "Пропуски зажигания", "P0171": "Слишком бедная смесь"};
-                    return codes[this.obdQuery.toUpperCase()] || "Код не найден. Ищи подсос воздуха.";
+                    const codes = {
+                        "P0300": "Пропуски зажигания. Проверь свечи.",
+                        "P0171": "Бедная смесь. Ищи подсос воздуха.",
+                        "P0500": "Датчик скорости. Оборвана цепь."
+                    };
+                    return codes[this.obdQuery.toUpperCase()] || "Код не найден. Попробуй обмотать изолентой.";
                 },
 
                 generateQR() {
-                    const qr = qrcode(0, 'M');
-                    qr.addData(window.location.href);
-                    qr.make();
-                    const el = document.getElementById('qrcode');
-                    if(el) el.innerHTML = qr.createImgTag(5);
+                    if (window.qrcode) {
+                        const qr = qrcode(0, 'M');
+                        qr.addData(window.location.href);
+                        qr.make();
+                        document.getElementById('qrcode').innerHTML = qr.createImgTag(5);
+                    }
                 }
             }));
         });
