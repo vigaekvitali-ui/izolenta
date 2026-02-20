@@ -2,177 +2,229 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>АРТЕЛЬ ФОРДОВА И БЕНЦОВА</title>
     <script src="https://cdn.jsdelivr.net/npm/gun/gun.js"></script>
     <style>
         :root {
-            --blue-tape: #0047ab;
-            --steel: #b8c2c9;
-            --oil: #1a1a1a;
-            --rust: #8b4513;
-            --nixie: #ff8c00;
+            --blue-tape: #0047ab; --steel: #b8c2c9; --oil: #1a1a1a; 
+            --rust: #8b4513; --nixie: #ff8c00; --bg: #121212;
         }
+        /* Темы оформления */
+        body.theme-rust { --bg: #2b1a0a; --steel: #a0522d; }
+        body.theme-neon { --bg: #000; --nixie: #00ff41; }
+        body.theme-tape { --bg: #001f4d; --blue-tape: #0055ff; }
 
         body {
-            background-color: var(--oil);
-            color: var(--steel);
-            font-family: 'Courier New', Courier, monospace;
-            margin: 0;
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
+            background-color: var(--bg); color: var(--steel);
+            font-family: 'Courier New', monospace; margin: 0;
+            display: grid; grid-template-columns: 1fr 320px; height: 100vh;
+            overflow: hidden;
         }
 
-        /* Стиль "Инженерная Изолента" */
         header {
-            border-bottom: 5px solid var(--blue-tape);
-            padding: 20px;
-            text-align: center;
-            background: linear-gradient(to bottom, #333, var(--oil));
+            grid-column: 1 / -1; background: #222; padding: 10px;
+            border-bottom: 4px solid var(--blue-tape); text-align: center;
         }
 
-        .nixie-lamp {
-            display: inline-block;
-            color: var(--nixie);
-            text-shadow: 0 0 10px var(--nixie);
-            border: 1px solid rgba(255,140,0,0.3);
-            padding: 5px 10px;
-            border-radius: 5px;
-            font-weight: bold;
+        .nixie-badge {
+            color: var(--nixie); text-shadow: 0 0 10px var(--nixie);
+            border: 1px solid var(--nixie); padding: 5px; font-size: 0.8rem;
         }
 
         nav {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 10px;
-            background: #222;
-            padding: 10px;
+            display: flex; overflow-x: auto; gap: 5px; background: #1a1a1a;
+            padding: 10px; border-bottom: 1px solid #444;
         }
 
-        .btn-toggle {
-            background: var(--steel);
-            border: 3px outset #888;
-            color: #000;
-            padding: 10px 15px;
-            cursor: pointer;
-            font-weight: bold;
-            text-transform: uppercase;
+        .btn-launch {
+            background: #333; color: var(--nixie); border: 3px outset #555;
+            padding: 8px 15px; cursor: pointer; font-weight: bold; font-size: 0.7rem;
+        }
+        .btn-launch:active { border-style: inset; color: white; }
+
+        main { padding: 20px; overflow-y: auto; background: rgba(0,0,0,0.3); }
+
+        aside {
+            background: #1a1a1a; border-left: 2px solid #333;
+            padding: 15px; display: flex; flex-direction: column; gap: 20px;
         }
 
-        .btn-toggle:active { border-style: inset; }
+        .card { border: 1px solid #444; padding: 15px; background: #1e1e1e; margin-bottom: 15px; }
+        
+        /* Таблица резьб */
+        table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
+        th, td { border: 1px solid #444; padding: 5px; text-align: left; }
+        th { background: var(--blue-tape); color: white; }
 
-        main { flex: 1; padding: 20px; max-width: 800px; margin: auto; }
+        /* Календарь */
+        #calendar { display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; font-size: 0.7rem; }
+        .holiday { color: #ff4444; font-weight: bold; }
 
-        .card {
-            border: 2px solid #444;
-            padding: 15px;
-            margin-bottom: 20px;
-            background: rgba(255,255,255,0.05);
+        @media (max-width: 800px) {
+            body { grid-template-columns: 1fr; }
+            aside { display: none; }
         }
 
-        /* 404 Стилизация */
-        .error-404 {
-            text-align: center;
-            color: var(--rust);
-        }
+        .gost-btn { background: none; border: 1px solid var(--rust); color: var(--steel); padding: 5px; cursor: pointer; }
+        .gost-btn:before { content: "👍 "; }
     </style>
 </head>
-<body>
+<body id="main-body">
 
 <header>
-    <h1>⚙️ АРТЕЛЬ ФОРДОВА И БЕНЦОВА ⚙️</h1>
-    <div class="nixie-lamp" id="status-lamp">ИН-14: СЕТЬ</div>
+    <div style="display:flex; justify-content: space-between; align-items: center;">
+        <span class="nixie-badge">ИН-14: ВКЛ</span>
+        <h2 style="margin:0; font-size: 1.2rem;">⚙️ АРТЕЛЬ ФОРДОВА И БЕНЦОВА ⚙️</h2>
+        <span class="nixie-badge" id="clock">12:00</span>
+    </div>
 </header>
 
-<nav>
-    <button class="btn-toggle" onclick="showPage('rules')">Устав</button>
-    <button class="btn-toggle" onclick="showPage('chat')">Чат</button>
-    <button class="btn-toggle" onclick="showPage('stash')">Заначка</button>
-    <button class="btn-toggle" onclick="showPage('settings')">Настройки</button>
-</nav>
+<nav id="nav-bar"></nav>
 
-<main id="content">
-    </main>
+<main id="app-viewport"></main>
+
+<aside>
+    <div class="card">
+        <h4 style="margin:0 0 10px 0; color:var(--blue-tape);">📅 КАЛЕНДАРЬ АРТЕЛИ</h4>
+        <div id="calendar-title" style="font-size: 0.8rem; margin-bottom: 5px;"></div>
+        <div id="calendar"></div>
+        <hr style="border:0; border-top:1px solid #444;">
+        <p id="quote" style="font-size: 0.7rem; font-style: italic; color: var(--nixie);"></p>
+    </div>
+
+    <div class="card">
+        <h4 style="margin:0 0 10px 0;">📦 СКЛАД ПОД ВЕРСТАКОМ</h4>
+        <div id="stock-items" style="font-size: 0.7rem;"></div>
+        <input type="text" id="stock-in" placeholder="Что нашел?" style="width:100%; background:#000; color:white; border:1px solid #444;">
+        <button class="btn-launch" onclick="addStock()" style="width:100%; margin-top:5px;">ЗАПИСАТЬ</button>
+    </div>
+</aside>
 
 <script>
     const gun = Gun(['https://gun-manhattan.herokuapp.com/gun']);
-    const app = document.getElementById('content');
+    const state = { user: 'Мастер_' + Math.floor(Math.random()*99) };
 
-    const pages = {
-        rules: `
-            <div class="card">
-                <h2>📋 10 ЗАПОВЕДЕЙ</h2>
-                <p>1. Синяя изолента — универсальный клей. Если не держит — значит, мало намотал.</p>
-                <p>2. Закон лишней детали: Остались болты? Это оптимизация веса!</p>
-                <button class="btn-toggle" style="background:var(--blue-tape); color:white;">ГОСТно 👍</button>
-            </div>
-        `,
-        chat: `
-            <div class="card">
-                <h2>📟 ГАРАЖНЫЙ ЧАТ</h2>
-                <div id="msg-box" style="height:200px; overflow-y:auto; background:#000; padding:10px; margin-bottom:10px; color:#0f0;"></div>
-                <input type="text" id="msg-input" style="width:70%; padding:10px;" placeholder="Пиши по делу...">
-                <button class="btn-toggle" onclick="send()">ПУСК</button>
-            </div>
-        `,
-        stash: `
-            <div class="card">
-                <h2>💰 ЗАНАЧКА</h2>
-                <p>Здесь пока пусто, как в баке перед зарплатой.</p>
-            </div>
-        `
+    const navItems = [
+        {id:'home', n:'УСТАВ'}, {id:'chat', n:'ЧАТ'}, {id:'stash', n:'ЗАНАЧКА'}, 
+        {id:'tech', n:'ТЕХИНФО'}, {id:'ai', n:'ИИ'}, {id:'prompts', n:'ПРОМТЫ'},
+        {id:'humor', n:'ГАРАЖ'}, {id:'settings', n:'⚙️'}
+    ];
+
+    const content = {
+        home: `<h3>📋 КОНСТИТУЦИЯ</h3>
+            <p>1. ТБ — не догма, а рекомендация (пальцев нет в запасе).</p>
+            <p>2. Закон лишней детали: остались болты — ты молодец.</p>
+            <p>3. Синяя изолента лечит всё.</p>
+            <h3>📶 ТАБЕЛЬ О РАНГАХ</h3>
+            <ol><li>Личинка инженера</li><li>Подмастерье</li><li>Мастер "Тяп-ляп"</li><li>Конструктор Хаоса</li><li>Мастодонт</li><li>Гранд-мастер</li></ol>`,
+        tech: `<h3>🔧 СПРАВОЧНИК РЕЗЬБ</h3>
+            <table><tr><th>Тип</th><th>Шаг</th><th>Сверло</th></tr>
+            <tr><td>M6</td><td>1.0</td><td>5.0</td></tr>
+            <tr><td>M8</td><td>1.25</td><td>6.8</td></tr>
+            <tr><td>M10</td><td>1.5</td><td>8.5</td></tr>
+            <tr><td>1/4" UNC</td><td>20 TPI</td><td>5.1</td></tr></table>
+            <h4>⚠️ ДИАГНОСТИКА</h4>
+            <p>Стучит на холодную: Забей, прогреется — пройдет.</p>
+            <p>Черный дым: Слишком много жизни в камере сгорания.</p>`,
+        ai: `<h3>🤖 ИНТЕГРАЦИИ ИИ</h3>
+            <p style="color:var(--nixie)">⚠️ ДЛЯ РАБОТЫ НУЖЕН VPN</p>
+            <button class="btn-launch" onclick="window.open('https://gemini.google.com')">GEMINI</button>
+            <button class="btn-launch" onclick="window.open('https://canva.com')">CANVA</button>
+            <button class="btn-launch" onclick="window.open('https://chat.qwenlm.ai/')">QWEN 3</button>`,
+        stash: `<h3>💰 ЗАНАЧКА</h3>
+            <p><b>Биржа дефицита:</b> Меняю карбюратор К-126 на синюю изоленту.</p>
+            <p><b>Вредные советы:</b> Срывай резьбу сразу, чтобы не мучаться потом.</p>`,
+        prompts: `<h3>💡 ГЕНЕРАТОР ИДЕЙ</h3><div class="card" id="prompt-box"></div>`,
+        humor: `<h3>🤣 ГАРАЖНЫЙ ЮМОР</h3><div class="card" id="humor-box"></div>`,
+        settings: `<h3>⚙️ НАСТРОЙКИ</h3>
+            <button class="btn-launch" onclick="setTheme('theme-standard')">МАЗУТ</button>
+            <button class="btn-launch" onclick="setTheme('theme-rust')">РЖАВЧИНА</button>
+            <button class="btn-launch" onclick="setTheme('theme-neon')">НЕОН</button>
+            <button class="btn-launch" onclick="setTheme('theme-tape')">ИЗОЛЕНТА</button>`,
+        chat: `<h3>📟 ОПЕРАТИВНАЯ СВЯЗЬ</h3>
+            <div id="chat-win" style="height:250px; overflow-y:auto; background:#000; padding:10px; border:1px solid var(--blue-tape); color:#0f0; font-size:0.8rem;"></div>
+            <input type="text" id="chat-in" style="width:70%; margin-top:10px; background:#222; color:white; border:1px solid var(--steel);">
+            <button class="btn-launch" onclick="sendChat()">ПУСК</button>`
     };
 
-    function showPage(p) {
-        app.innerHTML = pages[p] || `<div class="error-404"><h2>Система дала течь. Мотай изоленту!</h2></div>`;
-        if(p === 'chat') listenChat();
+    function show(id) {
+        document.getElementById('app-viewport').innerHTML = content[id] || "<h1>404</h1>";
+        if(id === 'chat') initChat();
+        if(id === 'prompts') genPrompts();
+        if(id === 'humor') genHumor();
     }
 
-    function listenChat() {
-        gun.get('artel_v1_chat').map().once(data => {
-            if(data && data.text) {
-                const node = document.createElement('div');
-                node.innerText = `> ${data.text}`;
-                document.getElementById('msg-box').appendChild(node);
+    // Календарь и Цитаты
+    function initSidebar() {
+        const now = new Date();
+        const holidays = { "1-1": "Новый Год", "7-1": "Рождество", "23-2": "День Защитника", "8-3": "8 Марта" };
+        document.getElementById('calendar-title').innerText = now.toLocaleString('ru', { month: 'long', year: 'numeric' });
+        
+        let html = "";
+        for(let i=1; i<=31; i++) {
+            let cl = holidays[i+"-"+(now.getMonth()+1)] ? "holiday" : "";
+            html += `<span class="${cl}">${i}</span>`;
+        }
+        document.getElementById('calendar').innerHTML = html;
+
+        const quotes = ["Если что-то может пойти не так — оно пойдет.","Бритва Оккама: не усложняй, мотай изоленту.","Все герметичное — течет. Все закрытое — открывается."];
+        document.getElementById('quote').innerText = quotes[Math.floor(Math.random()*quotes.length)];
+    }
+
+    // Логика Чата (Gun.js)
+    function initChat() {
+        document.getElementById('chat-win').innerHTML = "";
+        gun.get('artel_pro_chat').map().once(d => {
+            if(d && d.msg) {
+                const row = document.createElement('div');
+                row.innerHTML = `<span style="color:var(--nixie)">[${d.user}]</span>: ${d.msg} <button class="gost-btn" onclick="this.innerText='ГОСТно!'">ГОСТно</button>`;
+                document.getElementById('chat-win').appendChild(row);
             }
         });
     }
-
-    function send() {
-        const val = document.getElementById('msg-input').value;
-        if(val) {
-            gun.get('artel_v1_chat').set({text: val});
-            document.getElementById('msg-input').value = '';
-        }
+    function sendChat() {
+        const m = document.getElementById('chat-in').value;
+        if(m) { gun.get('artel_pro_chat').set({user: state.user, msg: m}); document.getElementById('chat-in').value=''; }
     }
 
-    // Инициализация
-    showPage('rules');
-
-    // Проверка офлайна
-    window.addEventListener('offline', () => {
-        document.getElementById('status-lamp').innerText = "ИН-14: ОФЛАЙН";
-        document.getElementById('status-lamp').style.color = "red";
+    // Склад
+    function addStock() {
+        const val = document.getElementById('stock-in').value;
+        if(val) { gun.get('artel_stock').set({item: val}); document.getElementById('stock-in').value=''; }
+    }
+    gun.get('artel_stock').map().once(d => {
+        if(d && d.item) {
+            const div = document.createElement('div');
+            div.innerText = "• " + d.item;
+            document.getElementById('stock-items').appendChild(div);
+        }
     });
-</script>
 
+    function genPrompts() {
+        const p = ["Чертеж вечного двигателя на синей изоленте", "Промпт для ИИ: Как выкрутить обломыш болта силой мысли", "Идея: ЧПУ-станок из старой стиралки"];
+        document.getElementById('prompt-box').innerText = p[Math.floor(Math.random()*p.length)];
+    }
+
+    function genHumor() {
+        const h = ["Заходит мастодонт в бар, а там все гайки на 13...", "Приходит личинка инженера к деду: — Дед, почему течет? — Потому что жидкое, внучек."];
+        document.getElementById('humor-box').innerText = h[Math.floor(Math.random()*h.length)];
+    }
+
+    function setTheme(t) { document.body.className = t; }
+
+    // Навигация
+    navItems.forEach(i => {
+        const b = document.createElement('button');
+        b.className = 'btn-launch'; b.innerText = i.n;
+        b.onclick = () => show(i.id);
+        document.getElementById('nav-bar').appendChild(b);
+    });
+
+    setInterval(() => { document.getElementById('clock').innerText = new Date().toLocaleTimeString('ru', {hour:'2-digit', minute:'2-digit'}); }, 1000);
+    
+    initSidebar();
+    show('home');
+</script>
 </body>
 </html>
-// Добавьте в объект pages
-pages.settings = `
-    <div class="card">
-        <h2>⚙️ НАСТРОЙКИ ОБОРУДОВАНИЯ</h2>
-        <p>Тема оформления:</p>
-        <select onchange="document.body.className = this.value" style="padding:10px; width:100%;">
-            <option value="theme-standard">Стандартная (Мазут)</option>
-            <option value="theme-rust">Ржавый гараж</option>
-            <option value="theme-clean">Чистый бокс (Светлая)</option>
-            <option value="theme-neon">Ночная смена (Неон)</option>
-            <option value="theme-tape">Синяя изолента (Extreme)</option>
-        </select>
-        <br><br>
-        <button class="btn-toggle" onclick="alert('Данные экспортированы в .bolt файл')">Экспорт данных</button>
-    </div>
-`;
