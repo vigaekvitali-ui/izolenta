@@ -6,6 +6,7 @@
     <title>АРТЕЛЬ: ГЛАВНЫЙ ЦЕХ</title>
     
     <script src="https://unpkg.com/lucide@0.321.0/dist/umd/lucide.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
     <script src="https://unpkg.com/alpinejs@3.13.5/dist/cdn.min.js" defer></script>
 
@@ -14,26 +15,28 @@
         :root { --blue-tape: #0047ab; --neon: #ff5e00; --steel: #bdc3c7; }
         body { background: #111; color: var(--steel); font-family: 'Courier New', monospace; margin: 0; padding-bottom: 90px; }
         
-        .page { display: none; padding: 20px; }
+        .page { display: none; padding: 20px; animation: fadeIn 0.3s; }
         .active { display: block !important; }
         
         .gost-card { border: 1px solid var(--blue-tape); padding: 15px; margin-bottom: 10px; background: rgba(0,71,171,0.1); border-left: 4px solid var(--blue-tape); }
         .neon-text { color: var(--neon); text-shadow: 0 0 5px var(--neon); }
         
-        .nav-bar { position: fixed; bottom: 0; width: 100%; background: #000; display: flex; justify-content: space-around; padding: 15px 0; border-top: 2px solid var(--blue-tape); box-shadow: 0 -5px 15px rgba(0,0,0,0.5); }
-        .nav-item { color: #555; cursor: pointer; transition: 0.3s; }
+        .nav-bar { position: fixed; bottom: 0; width: 100%; background: #000; display: flex; justify-content: space-around; padding: 15px 0; border-top: 2px solid var(--blue-tape); box-shadow: 0 -5px 15px rgba(0,0,0,0.5); z-index: 1000; }
+        .nav-item { color: #444; cursor: pointer; transition: 0.3s; }
         .nav-item.active-nav { color: var(--neon); transform: translateY(-5px); }
         
-        table { width: 100%; border-collapse: collapse; font-size: 0.8rem; margin-top: 10px; }
+        input, select { width: 100%; padding: 12px; background: #000; border: 1px solid var(--blue-tape); color: white; box-sizing: border-box; margin-top: 5px; }
+        .btn-pusker { background: var(--blue-tape); border: none; color: white; padding: 10px 20px; cursor: pointer; font-weight: bold; }
+        table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
         th, td { border: 1px solid #333; padding: 10px; text-align: center; }
         th { background: var(--blue-tape); color: white; }
-        input { width: 100%; padding: 12px; background: #000; border: 1px solid var(--blue-tape); color: white; box-sizing: border-box; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     </style>
 </head>
 <body x-data="artelCore" x-cloak>
 
     <header style="padding: 15px; text-align: center; background: #000; border-bottom: 1px solid var(--blue-tape);">
-        <h1 style="margin: 0; font-size: 1rem; letter-spacing: 2px;" class="neon-text">🛠 АРТЕЛЬ: ГЛАВНЫЙ ЦЕХ</h1>
+        <h1 style="margin: 0; font-size: 0.9rem; letter-spacing: 2px;" class="neon-text">🛠 АРТЕЛЬ ФОРДОВА И БЕНЦОВА</h1>
     </header>
 
     <div :class="{ 'active': page === 1 }" class="page">
@@ -42,8 +45,8 @@
             <div style="font-size: 0.8rem; font-style: italic; margin-top: 5px;" x-text="dailyQuote"></div>
         </div>
         <h3 class="neon-text">ЗАПОВЕДИ МАСТЕРОВ</h3>
-        <template x-for="(z, i) in zapovedi" :key="i">
-            <div class="gost-card" style="font-size: 0.85rem;" x-text="(i+1) + '. ' + z"></div>
+        <template x-for="(z, i) in zapovedi">
+            <div class="gost-card" style="font-size: 0.8rem;" x-text="(i+1) + '. ' + z"></div>
         </template>
     </div>
 
@@ -52,20 +55,32 @@
         <div style="height: 300px; overflow-y: auto; border: 1px solid var(--blue-tape); background: #000; padding: 10px; margin-bottom: 10px;">
             <template x-for="m in messages">
                 <div style="margin-bottom: 10px; border-left: 2px solid var(--blue-tape); padding-left: 10px;">
-                    <small class="neon-text" x-text="m.user"></small><br>
+                    <small class="neon-text" x-text="m.username"></small><br>
                     <span x-text="m.text"></span>
                 </div>
             </template>
         </div>
         <div style="display: flex; gap: 5px;">
-            <input type="text" x-model="msg" placeholder="Приём...">
-            <button @click="sendMsg" style="background: var(--blue-tape); border: none; color: white; padding: 0 20px;">ПУСК</button>
+            <input type="text" x-model="msg" @keyup.enter="sendMsg" placeholder="Приём...">
+            <button @click="sendMsg" class="btn-pusker">ПУСК</button>
         </div>
     </div>
 
+    <div :class="{ 'active': page === 3 }" class="page">
+        <h3 class="neon-text">БИРЖА ДЕФИЦИТА</h3>
+        <template x-for="item in inventory">
+            <div class="gost-card" style="display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <strong x-text="item.name" style="color: var(--neon);"></strong><br>
+                    <small x-text="item.desc"></small>
+                </div>
+                <small x-text="item.owner" style="color: #666;"></small>
+            </div>
+        </template>
+    </div>
+
     <div :class="{ 'active': page === 4 }" class="page">
-        <h3 class="neon-text">ГОСТ 24705 (РЕЗЬБЫ)</h3>
-        
+        <h3 class="neon-text">РЕЗЬБЫ ГОСТ</h3>
         <table>
             <thead><tr><th>M</th><th>Шаг</th><th>Сверло</th></tr></thead>
             <tbody>
@@ -74,22 +89,47 @@
                 </template>
             </tbody>
         </table>
-        
-        <h3 class="neon-text" style="margin-top: 25px;">ДИАГНОСТИКА OBD-II</h3>
+        <h3 class="neon-text" style="margin-top: 20px;">OBD-II КОДЫ</h3>
         <input type="text" x-model="obdQuery" placeholder="P0300...">
-        <div style="margin-top: 10px; padding: 15px; background: #000; border: 1px solid var(--neon); min-height: 40px;" x-text="scanOBD()"></div>
+        <div style="margin-top: 10px; padding: 10px; background: #000; border: 1px solid var(--neon);" x-text="scanOBD()"></div>
+    </div>
+
+    <div :class="{ 'active': page === 5 }" class="page">
+        <h3 class="neon-text">НЕЙРО-ВЕРСТАК</h3>
+        <div class="gost-card"><a href="https://gemini.google.com" style="color: white; text-decoration: none;">🤖 Gemini AI (Инженер)</a></div>
+        <div class="gost-card"><a href="https://suno.com" style="color: white; text-decoration: none;">🎸 Suno (Гаражный рок)</a></div>
+        <div class="gost-card"><a href="https://canva.com" style="color: white; text-decoration: none;">🎨 Canva (Чертежи)</a></div>
+    </div>
+
+    <div :class="{ 'active': page === 6 }" class="page">
+        <h3 class="neon-text">ГЕНЕРАТОР ИДЕЙ</h3>
+        <div class="gost-card" x-text="currentPrompt"></div>
+        <button @click="shufflePrompt" class="btn-pusker" style="width: 100%;">СЛЕДУЮЩАЯ ИДЕЯ</button>
+    </div>
+
+    <div :class="{ 'active': page === 7 }" class="page">
+        <h3 class="neon-text">ГАРАЖНЫЕ БАЙКИ</h3>
+        <div class="gost-card" x-text="currentJoke"></div>
+        <button @click="shuffleJoke" class="btn-pusker" style="width: 100%;">ЕЩЁ!</button>
     </div>
 
     <div :class="{ 'active': page === 8 }" class="page">
-        <h3 class="neon-text">СВЯЗЬ И НАСТРОЙКИ</h3>
-        <div id="qrcode" style="display: flex; justify-content: center; background: #fff; padding: 15px; border: 4px solid var(--blue-tape);"></div>
-        <p style="text-align: center; font-size: 0.7rem; margin-top: 15px;">QR-КОД ДЛЯ ВХОДА С ДРУГОГО УСТРОЙСТВА</p>
+        <h3 class="neon-text">НАСТРОЙКИ</h3>
+        <div class="gost-card">
+            <label>Твой позывной:</label>
+            <input type="text" x-model="username">
+        </div>
+        <div id="qrcode" style="display: flex; justify-content: center; background: #fff; padding: 15px; border: 4px solid var(--blue-tape); margin-top: 10px;"></div>
     </div>
 
     <nav class="nav-bar">
         <div class="nav-item" :class="{'active-nav': page === 1}" @click="setPage(1)"><i data-lucide="home"></i></div>
         <div class="nav-item" :class="{'active-nav': page === 2}" @click="setPage(2)"><i data-lucide="message-circle"></i></div>
+        <div class="nav-item" :class="{'active-nav': page === 3}" @click="setPage(3)"><i data-lucide="package"></i></div>
         <div class="nav-item" :class="{'active-nav': page === 4}" @click="setPage(4)"><i data-lucide="wrench"></i></div>
+        <div class="nav-item" :class="{'active-nav': page === 5}" @click="setPage(5)"><i data-lucide="zap"></i></div>
+        <div class="nav-item" :class="{'active-nav': page === 6}" @click="setPage(6)"><i data-lucide="brain-circuit"></i></div>
+        <div class="nav-item" :class="{'active-nav': page === 7}" @click="setPage(7)"><i data-lucide="laugh"></i></div>
         <div class="nav-item" :class="{'active-nav': page === 8}" @click="setPage(8)"><i data-lucide="settings"></i></div>
     </nav>
 
@@ -97,29 +137,26 @@
         document.addEventListener('alpine:init', () => {
             Alpine.data('artelCore', () => ({
                 page: 1,
+                username: localStorage.getItem('artel_user') || 'Инженер-' + Math.floor(Math.random() * 99),
                 msg: '',
-                messages: [{user: 'СИСТЕМА', text: 'Смена начата. Связь в норме.'}],
+                messages: [],
                 obdQuery: '',
-                currentHoliday: 'Будни в Артели',
-                dailyQuote: 'Если не крутится — возьми рычаг больше.',
+                currentHoliday: 'Рабочая смена',
+                dailyQuote: 'Работает? Не трогай!',
+                currentPrompt: 'Спроектируй вечный двигатель на синей изоленте...',
+                currentJoke: 'Лишняя деталь - это признак того, что ты инженер лучше, чем заводской.',
                 
-                zapovedi: [
-                    "ТБ — не догма, а рекомендация.",
-                    "Синяя изолента лечит всё.",
-                    "Лишняя деталь — это оптимизация веса.",
-                    "Мат — ускоритель процесса."
-                ],
+                zapovedi: ["ТБ — не догма, а рекомендация.", "Синяя изолента лечит всё.", "Лишняя деталь — это оптимизация.", "Обмыл — значит, закрепил."],
+                inventory: [{name:'К-126 Карбюратор', desc:'На запчасти', owner:'Дядя Юра'}, {name:'Изолента', desc:'Синяя, новая', owner:'Админ'}],
+                rezba: [{m:'M6', s:'1.0', d:'5.0'}, {m:'M8', s:'1.25', d:'6.8'}, {m:'M10', s:'1.5', d:'8.5'}],
                 
-                rezba: [
-                    {m:'M6', s:'1.0', d:'5.0'}, 
-                    {m:'M8', s:'1.25', d:'6.8'}, 
-                    {m:'M10', s:'1.5', d:'8.5'}, 
-                    {m:'M12', s:'1.75', d:'10.2'}
-                ],
+                sb: null,
 
                 init() {
                     this.renderIcons();
+                    this.updateCalendar();
                     this.generateQR();
+                    this.initSupabase();
                 },
 
                 setPage(p) {
@@ -127,33 +164,48 @@
                     this.$nextTick(() => this.renderIcons());
                 },
 
-                renderIcons() {
-                    if (window.lucide) {
-                        lucide.createIcons();
-                    }
+                renderIcons() { if (window.lucide) lucide.createIcons(); },
+
+                async initSupabase() {
+                    try {
+                        this.sb = supabase.createClient('https://grsszunlfmehyykkvccj.supabase.co', 'ZTEGCDF4981E');
+                        const { data } = await this.sb.from('artel_messages').select('*').limit(20);
+                        if (data) this.messages = data;
+                        
+                        this.sb.channel('artel-live').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'artel_messages' }, p => {
+                            this.messages.push(p.new);
+                        }).subscribe();
+                    } catch (e) { console.warn("Supabase Offline"); }
                 },
 
-                sendMsg() {
+                async sendMsg() {
                     if (!this.msg) return;
-                    this.messages.push({user: 'МАСТЕР', text: this.msg});
+                    const m = { username: this.username, text: this.msg };
+                    if (this.sb) await this.sb.from('artel_messages').insert([m]);
+                    else this.messages.push(m);
                     this.msg = '';
                 },
 
                 scanOBD() {
-                    const codes = {
-                        "P0300": "Пропуски зажигания. Проверь свечи.",
-                        "P0171": "Бедная смесь. Ищи подсос воздуха.",
-                        "P0500": "Датчик скорости. Оборвана цепь."
-                    };
-                    return codes[this.obdQuery.toUpperCase()] || "Код не найден. Попробуй обмотать изолентой.";
+                    const codes = {"P0300": "Пропуски зажигания", "P0171": "Бедная смесь"};
+                    return codes[this.obdQuery.toUpperCase()] || "Код не найден.";
                 },
+
+                updateCalendar() {
+                    const holidays = {"07-03": "День Независимости РБ", "01-01": "Новый Год"};
+                    const day = new Date().toISOString().slice(5,10);
+                    this.currentHoliday = holidays[day] || "Будни в Артели";
+                },
+
+                shufflePrompt() { this.currentPrompt = "Идея: Собери ЧПУ из старого принтера!"; },
+                shuffleJoke() { this.currentJoke = "Вскрытие показало: пациент умер от вскрытия."; },
 
                 generateQR() {
                     if (window.qrcode) {
                         const qr = qrcode(0, 'M');
                         qr.addData(window.location.href);
                         qr.make();
-                        document.getElementById('qrcode').innerHTML = qr.createImgTag(5);
+                        document.getElementById('qrcode').innerHTML = qr.createImgTag(4);
                     }
                 }
             }));
