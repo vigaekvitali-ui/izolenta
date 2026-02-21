@@ -3,291 +3,254 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>АРТЕЛЬ ФОРДОВА И БЕНЦОВА — ЦЕХ 2.0</title>
+    <title>АРТЕЛЬ ФОРДОВА И БЕНЦОВА</title>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
     <style>
         [x-cloak] { display: none !important; }
-        :root { 
-            --blue: #0047ab; --steel: #bdc3c7; --oil: #0a0a0a; --neon: #ff5e00; 
-            --bg: #0a0a0a; --card-bg: rgba(0,71,171,0.1); --text: #bdc3c7;
+        :root { --blue: #0047ab; --steel: #bdc3c7; --oil: #0a0a0a; --neon: #ff5e00; }
+        
+        body { 
+            background: var(--oil); color: var(--steel); 
+            font-family: 'Courier New', monospace; margin: 0; padding-bottom: 80px; 
+            -webkit-tap-highlight-color: transparent;
         }
-        /* Темы */
-        .theme-modern { --bg: #0a0f1a; --blue: #00d4ff; --neon: #00ff9d; --card-bg: #16213e; }
-        .theme-raritet { --bg: #2d241e; --blue: #a67c52; --neon: #ffd700; --card-bg: #3e322b; --steel: #f5ebe0; }
 
-        body { background: var(--bg); color: var(--steel); font-family: 'Courier New', monospace; margin: 0; padding-bottom: 80px; transition: 0.3s; }
-        header { background: #000; padding: 15px; text-align: center; border-bottom: 2px solid var(--blue); position: sticky; top: 0; z-index: 100; }
+        header { 
+            background: #000; padding: 15px; text-align: center; 
+            border-bottom: 2px solid var(--blue); position: sticky; top: 0; z-index: 100; 
+        }
+
         .in-14 { color: var(--neon); text-shadow: 0 0 10px var(--neon); font-weight: bold; }
-        .page { display: none; padding: 15px; animation: fadeIn 0.3s; }
-        .active { display: block; }
-        .gost-card { border: 1px solid var(--blue); background: var(--card-bg); padding: 15px; margin-bottom: 10px; border-left: 5px solid var(--blue); }
-        .nav-bar { position: fixed; bottom: 0; width: 100%; background: #000; display: flex; justify-content: space-around; padding: 12px 0; border-top: 2px solid var(--blue); z-index: 1000; }
-        .nav-item { color: #444; cursor: pointer; transition: 0.3s; }
-        .nav-item.active { color: var(--neon); transform: scale(1.1); }
-        table { width: 100%; border-collapse: collapse; font-size: 0.75rem; margin-top: 10px; background: #000; }
+
+        /* Логика отображения страниц - теперь железно */
+        .page { display: none; padding: 15px; min-height: 80vh; }
+        .page.active { display: block !important; }
+
+        .gost-card { 
+            border: 1px solid var(--blue); background: rgba(0,71,171,0.1); 
+            padding: 12px; margin-bottom: 10px; border-left: 5px solid var(--blue); 
+        }
+
+        .nav-bar { 
+            position: fixed; bottom: 0; width: 100%; background: #000; 
+            display: flex; justify-content: space-around; padding: 15px 0; 
+            border-top: 2px solid var(--blue); z-index: 1000; 
+        }
+
+        .nav-item { color: #444; cursor: pointer; transition: 0.2s; }
+        .nav-item.active { color: var(--neon); transform: scale(1.2); }
+
+        .btn-pusker { 
+            background: var(--blue); color: white; border: none; 
+            padding: 12px; cursor: pointer; width: 100%; font-weight: bold; 
+            margin-top: 10px; text-transform: uppercase;
+        }
+
+        .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; text-align: center; }
+        .day-box { padding: 5px; font-size: 0.8rem; border: 1px solid #222; }
+        .today { background: var(--neon); color: #000; font-weight: bold; }
+        
+        table { width: 100%; border-collapse: collapse; font-size: 0.8rem; margin-top: 10px; }
         th, td { border: 1px solid #333; padding: 8px; text-align: left; }
-        th { background: var(--blue); color: white; }
-        input, select, textarea { width: 100%; padding: 10px; background: #000; border: 1px solid var(--blue); color: #fff; margin-top: 5px; box-sizing: border-box; }
-        .btn-pusker { background: var(--blue); color: white; border: none; padding: 10px; font-weight: bold; cursor: pointer; width: 100%; margin-top: 10px; }
-        .brand-zone { border: 2px solid var(--blue); padding: 15px; border-radius: 8px; margin-bottom: 20px; text-align: center; }
-        .links-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
-        .links-grid a { background: #111; padding: 5px; color: var(--steel); text-decoration: none; border: 1px solid #333; font-size: 0.7rem; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        th { background: var(--blue); }
     </style>
 </head>
-<body x-data="artelApp" :class="'theme-' + theme" x-cloak>
+<body x-data="artelApp" x-init="initApp()">
 
 <header>
-    <div style="display: flex; justify-content: center; align-items: center; gap: 10px;">
-        <i data-lucide="cog" class="in-14"></i>
-        <h2 style="margin: 0; font-size: 1.1rem;">АРТЕЛЬ ФОРДОВА И БЕНЦОВА</h2>
-        <i data-lucide="cog" class="in-14"></i>
-    </div>
+    <div class="in-14" style="font-size: 1.2rem;">АРТЕЛЬ ФОРДОВА И БЕНЦОВА</div>
 </header>
 
 <div class="page" :class="{'active': page === 1}">
     <div class="gost-card">
         <div class="in-14" x-text="holidayInfo"></div>
-        <div style="font-size: 0.8rem; margin-top: 5px;" x-text="'Смена от: ' + new Date().toLocaleDateString()"></div>
+        <div class="cal-grid" style="margin-top:10px">
+            <template x-for="dn in ['Пн','Вт','Ср','Чт','Пт','Сб','Вс']">
+                <div style="color:var(--blue); font-size:0.7rem; font-weight:bold" x-text="dn"></div>
+            </template>
+            <template x-for="d in calendar">
+                <div class="day-box" :class="{'today': d.isToday}" x-text="d.day"></div>
+            </template>
+        </div>
+        <div style="margin-top:15px; font-size:0.8rem; border-top:1px solid #333; padding-top:10px;">
+            <div x-text="'Мерфи: ' + murphy"></div>
+            <div x-text="'Оккам: ' + occam" style="color:var(--blue); margin-top:5px;"></div>
+        </div>
     </div>
-    <h3 class="in-14">📜 ГОСТЫ АРТЕЛИ</h3>
-    <template x-for="(z, i) in zapovedi">
-        <div class="gost-card"><strong x-text="(i+1) + '. ' + z.t"></strong><p style="font-size:0.8rem; margin:5px 0" x-text="z.d"></p></div>
-    </template>
+    
+    <div x-show="!openUstav">
+        <button class="btn-pusker" @click="openUstav = true">РАЗВЕРНУТЬ УСТАВ</button>
+    </div>
+    
+    <div x-show="openUstav">
+        <h3 class="in-14">📋 10 ЗАПОВЕДЕЙ</h3>
+        <template x-for="(z, i) in zapovedi">
+            <div class="gost-card">
+                <strong x-text="(i+1) + '. ' + z.t"></strong>
+                <p style="font-size:0.8rem; margin:5px 0" x-text="z.d"></p>
+            </div>
+        </template>
+        <button class="btn-pusker" @click="openUstav = false">СВЕРНУТЬ</button>
+    </div>
 </div>
 
 <div class="page" :class="{'active': page === 2}">
-    <h3 class="in-14">РАДИОРУБКА (ЭФИР)</h3>
-    <template x-if="!user.id">
-        <div class="gost-card">
-            Регистрация в цеху:
-            <input type="text" x-model="tempName" placeholder="Позывной...">
-            <button class="btn-pusker" @click="register()">ВСТАТЬ В СТРОЙ</button>
-        </div>
-    </template>
-    <template x-if="user.id">
-        <div>
-            <div class="gost-card" style="font-size: 0.8rem;">
-                Мастер: <span class="in-14" x-text="user.name"></span> | Ранг: <span x-text="user.rank"></span>
+    <h3 class="in-14">РАДИОРУБКА</h3>
+    <div id="chat-window" style="height: 300px; overflow-y: auto; background:#000; border:1px solid var(--blue); padding:10px;">
+        <template x-for="m in messages">
+            <div style="margin-bottom:10px; border-left:3px solid var(--blue); padding-left:10px;">
+                <small class="in-14" x-text="m.u"></small>
+                <div x-text="m.t"></div>
             </div>
-            <div id="chat" style="height: 250px; overflow-y: auto; background: #000; border: 1px solid var(--blue); padding: 10px;">
-                <template x-for="m in messages">
-                    <div style="margin-bottom:10px; border-left: 2px solid var(--blue); padding-left:10px;">
-                        <small :class="['Мастодонт','Гранд-мастер'].includes(m.r) ? 'in-14' : ''" x-text="m.u + ' [' + m.r + ']'"></small>
-                        <div x-text="m.t"></div>
-                    </div>
-                </template>
-            </div>
-            <textarea x-model="newMsg" placeholder="Сообщение..."></textarea>
-            <button class="btn-pusker" @click="sendMsg()">ПУСК</button>
-        </div>
-    </template>
+        </template>
+    </div>
+    <input type="text" x-model="newMsg" style="width:100%; padding:10px; background:#000; color:#fff; border:1px solid var(--blue); margin-top:10px;" placeholder="Сообщение...">
+    <button class="btn-pusker" @click="sendMsg()">ПУСК</button>
 </div>
 
 <div class="page" :class="{'active': page === 3}">
     <h3 class="in-14">ЗАНАЧКА</h3>
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 5px;">
-        <button class="btn-pusker" @click="subPage=1">БИРЖА</button>
-        <button class="btn-pusker" @click="subPage=2">АРХИВ НЗ</button>
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:5px;">
+        <button class="btn-pusker" @click="sP=1">БИРЖА</button>
+        <button class="btn-pusker" @click="sP=2">СОВЕТЫ</button>
+        <button class="btn-pusker" @click="sP=3">АРХИВ</button>
+        <button class="btn-pusker" @click="sP=4">ЯЩИК НЗ</button>
     </div>
     <div class="gost-card" style="margin-top:10px">
-        <template x-if="subPage==1"><div><strong>ОБМЕН:</strong> Трамблер на МТЗ, Коленвал ГАЗ-53, резина 16".</div></template>
-        <template x-if="subPage==2">
-            <div>
-                <strong>ХРАНИЛИЩЕ:</strong>
-                <input type="file" style="margin-top:10px;">
-                <button class="btn-pusker" style="font-size:0.7rem;">ЗАЛИТЬ ФАЙЛ (БЕЗЛИМИТ)</button>
-            </div>
-        </template>
+        <div x-show="sP==1"><strong>БИРЖА:</strong> Есть комплект прокладок на ЯМЗ. Обмен.</div>
+        <div x-show="sP==2"><strong>СОВЕТ:</strong> Не затягивай гайки «до хруста», хрустит обычно резьба.</div>
+        <div x-show="sP==3"><strong>АРХИВ:</strong> <a href="#" style="color:white">Чертеж съемника (PNG)</a></div>
+        <div x-show="sP==4"><strong>НЗ:</strong> Лом, кувалда и чья-то матерь.</div>
     </div>
 </div>
 
 <div class="page" :class="{'active': page === 4}">
-    <h3 class="in-14">ТЕХ-СПРАВОЧНИК</h3>
-    <input type="text" x-model="search" placeholder="Поиск (P0300, M8, 203, MAN...)">
-    <div style="overflow-x: auto; max-height: 400px;">
-        <table>
-            <thead><tr><th>Категория</th><th>Код/Тип</th><th>Значение</th></tr></thead>
-            <tbody>
-                <template x-for="r in filteredData">
-                    <tr><td x-text="r.c"></td><td x-text="r.p" class="in-14"></td><td x-text="r.s"></td></tr>
-                </template>
-            </tbody>
-        </table>
-    </div>
+    <h3 class="in-14">СПРАВОЧНИК</h3>
+    <input type="text" x-model="q" placeholder="Поиск (М10, OBD, Т-40)..." style="width:100%; padding:10px; background:#000; color:#fff; border:1px solid var(--blue);">
+    <table>
+        <thead><tr><th>Узел</th><th>Данные</th></tr></thead>
+        <tbody>
+            <template x-for="r in techData.filter(d => d.t.toLowerCase().includes(q.toLowerCase()) || d.v.toLowerCase().includes(q.toLowerCase()))">
+                <tr><td x-text="r.t"></td><td x-text="r.v" class="in-14"></td></tr>
+            </template>
+        </tbody>
+    </table>
 </div>
 
 <div class="page" :class="{'active': page === 5}">
-    <h3 class="in-14">ГЕНЕРАТОР ПРОМТОВ</h3>
-    <div class="gost-card">
-        <strong>ОБУЧАЛКА:</strong>
-        <p style="font-size:0.75rem">Пиши ИИ: "Действуй как мастер-дизелист. Проведи диагностику по признакам... Выдай таблицу."</p>
-    </div>
-    <div class="gost-card" x-text="currentPrompt" style="min-height: 80px; color: var(--neon)"></div>
-    <button class="btn-pusker" @click="shufflePrompt()">НОВАЯ ИДЕЯ</button>
-    <div style="margin-top:10px; font-size: 0.8rem;">
-        <a href="https://promthelp.ru" target="_blank" class="in-14">🔗 Промт Ковбой</a> | 
-        <a href="https://flowgpt.com" target="_blank" class="in-14">🔗 База Промтов</a>
-    </div>
+    <h3 class="in-14">СЕРВИСЫ И ИИ</h3>
+    <template x-for="l in links">
+        <a :href="l.u" target="_blank" class="gost-card" style="display:block; text-decoration:none; color:inherit;" x-text="l.n"></a>
+    </template>
 </div>
 
 <div class="page" :class="{'active': page === 6}">
-    <h3 class="in-14">ИНТЕГРАЦИИ (VPN)</h3>
-    <p style="color:red; font-size:0.7rem">Включите VPN для работы ИИ!</p>
-    <div class="gost-card"><a href="https://gemini.google.com" target="_blank">🤖 Google Gemini</a></div>
-    <div class="gost-card"><a href="https://www.qwenlm.ai" target="_blank">🐲 Qwen AI (DeepSeek)</a></div>
-    <div class="gost-card"><a href="https://suno.com" target="_blank">🎸 Suno (Музыка)</a></div>
-    <div class="gost-card"><a href="https://1.1.1.1" target="_blank">🛡 Cloudflare VPN</a></div>
+    <h3 class="in-14">ВЕРСТАК ПРОМТОВ</h3>
+    <div class="gost-card" style="min-height:150px" x-text="prompt"></div>
+    <button class="btn-pusker" @click="nextPrompt()">СЛЕДУЮЩИЙ</button>
 </div>
 
 <div class="page" :class="{'active': page === 7}">
-    <h3 class="in-14">ГАРАЖНЫЙ КЛУБ</h3>
-    
-    <div class="brand-zone">
-        <div class="in-14">🚬 СИГАРЕТЫ "АРТЕЛЬНЫЕ"</div>
-        <div class="links-grid">
-            <a href="https://anekdot.ru" target="_blank">Анекдоты</a>
-            <a href="https://pikabu.ru" target="_blank">Пикабу</a>
-        </div>
-    </div>
-
-    <div class="brand-zone" style="border-color: #00d4ff;">
-        <div style="color: #00d4ff; font-weight: bold;">☕ КОФЕ "ПОРШНЕВОЙ"</div>
-        <div class="links-grid">
-            <a href="https://rsl.ru" target="_blank">Библиотека (РГБ)</a>
-            <a href="https://cyberleninka.ru" target="_blank">Научные статьи</a>
-        </div>
-    </div>
-
-    <div class="brand-zone" style="border-color: gold;">
-        <div style="color: gold; font-weight: bold;">🥃 ВИСКИ "ГОСТ 40%"</div>
-        <div class="links-grid">
-            <a href="http://radiopotok.ru" target="_blank">Авто-Радио</a>
-            <a href="https://zaycev.net" target="_blank">Музыка (Бесплатно)</a>
-        </div>
-    </div>
+    <h3 class="in-14">ЮМОР</h3>
+    <div class="gost-card" style="min-height:150px" x-text="joke"></div>
+    <button class="btn-pusker" @click="nextJoke()">ЕЩЁ</button>
 </div>
 
 <div class="page" :class="{'active': page === 8}">
-    <h3 class="in-14">НАСТРОЙКИ И АДМИНКА</h3>
-    <div class="gost-card">
-        Стиль: 
-        <select x-model="theme">
-            <option value="classic">Синяя изолента</option>
-            <option value="modern">Новое авто (Neon)</option>
-            <option value="raritet">Раритет (Chrome)</option>
-        </select>
-    </div>
-    
-    <div class="gost-card" style="border-color: var(--neon)">
-        <strong>АДМИН-ПАНЕЛЬ:</strong>
-        <div style="font-size: 0.8rem; margin-top:10px;">
-            Пользователь: <span x-text="user.name"></span><br>
-            Ранг: 
-            <select x-model="user.rank" @change="saveUser()">
-                <option>Личинка инженера</option>
-                <option>Мастер Тяп-ляп</option>
-                <option>Мастодонт</option>
-                <option>Гранд-мастер</option>
-            </select>
-        </div>
-    </div>
-
-    <div style="text-align:center; margin-top:20px;">
-        <div id="qrcode" style="background:#fff; padding:10px; display:inline-block;">
-            <img src="https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=ArtelApp" alt="QR">
-        </div>
-    </div>
+    <h3 class="in-14">НАСТРОЙКИ</h3>
+    <div class="gost-card">Роль: <span x-text="role"></span></div>
+    <div id="qrcode" style="background:#fff; padding:10px; display:inline-block; margin-top:20px;"></div>
 </div>
 
 <nav class="nav-bar">
-    <div class="nav-item" :class="{'active': page === 1}" @click="page=1"><i data-lucide="home"></i></div>
-    <div class="nav-item" :class="{'active': page === 2}" @click="page=2"><i data-lucide="message-circle"></i></div>
-    <div class="nav-item" :class="{'active': page === 3}" @click="page=3"><i data-lucide="package"></i></div>
-    <div class="nav-item" :class="{'active': page === 4}" @click="page=4"><i data-lucide="book-open"></i></div>
-    <div class="nav-item" :class="{'active': page === 5}" @click="page=5"><i data-lucide="brain"></i></div>
-    <div class="nav-item" :class="{'active': page === 6}" @click="page=6"><i data-lucide="zap"></i></div>
-    <div class="nav-item" :class="{'active': page === 7}" @click="page=7"><i data-lucide="smile"></i></div>
-    <div class="nav-item" :class="{'active': page === 8}" @click="page=8"><i data-lucide="settings"></i></div>
+    <div class="nav-item" :class="{'active': page === 1}" @click="page=1; refreshIcons()"><i data-lucide="home"></i></div>
+    <div class="nav-item" :class="{'active': page === 2}" @click="page=2; refreshIcons()"><i data-lucide="message-square"></i></div>
+    <div class="nav-item" :class="{'active': page === 3}" @click="page=3; refreshIcons()"><i data-lucide="box"></i></div>
+    <div class="nav-item" :class="{'active': page === 4}" @click="page=4; refreshIcons()"><i data-lucide="wrench"></i></div>
+    <div class="nav-item" :class="{'active': page === 5}" @click="page=5; refreshIcons()"><i data-lucide="zap"></i></div>
+    <div class="nav-item" :class="{'active': page === 6}" @click="page=6; refreshIcons()"><i data-lucide="brain"></i></div>
+    <div class="nav-item" :class="{'active': page === 7}" @click="page=7; refreshIcons()"><i data-lucide="smile"></i></div>
+    <div class="nav-item" :class="{'active': page === 8}" @click="page=8; refreshIcons()"><i data-lucide="settings"></i></div>
 </nav>
 
 <script>
     document.addEventListener('alpine:init', () => {
-        Alpine.data('artelApp', () => ({
-            page: 1, subPage: 1, search: '', theme: 'classic',
-            tempName: '', 
-            user: { id: null, name: '', rank: 'Личинка инженера' },
-            messages: [{u:'Админ', r:'Гранд-мастер', t:'Цех в работе. Смена принята.'}],
-            holidayInfo: 'Будни в Артели',
-            currentPrompt: '',
-            
-            zapovedi: [
-                {t:'ТБ — не догма', d:'Но запасных пальцев в каптерке нет.'},
-                {t:'Лишняя деталь', d:'Это не ошибка, а облегчение конструкции.'},
-                {t:'Синяя изолента', d:'Держит лучше, чем сварка на холодную.'}
-            ],
-
+         Alpine.data('artelApp', () => ({
+            page: 1, sP: 1, q: '', openUstav: false,
+            role: 'Мастер', prompt: '', joke: '', newMsg: '',
+            holidayInfo: 'Будни Артели', murphy: 'Все, что может сломаться — сломается.', occam: 'Не усложняй.',
+            calendar: [], messages: [{u:'Админ', t:'Цех готов к работе.'}],
             techData: [
-                {c:'OBD-II', p:'P0101', s:'Датчик расхода воздуха (MAF)'},
-                {c:'OBD-II', p:'P0300', s:'Пропуски зажигания'},
-                {c:'VAG', p:'16395', s:'Сдвиг фаз поздно (P0011)'},
-                {c:'BMW', p:'2A82', s:'VANOS впуск (заклинило)'},
-                {c:'MAN', p:'EDC 3779', s:'Давление в Rail (утечка)'},
-                {c:'ГАЗ/ВАЗ', p:'P0335', s:'Датчик коленвала (ДПКВ)'},
-                {c:'Резьба', p:'M6/M8/M12', s:'Сверло: 5.0 / 6.8 / 10.2 мм'},
-                {c:'Подш.', p:'203/305/6204', s:'Размеры: 17x40 / 25x62 / 20x47'},
-                {c:'Зазоры', p:'ЯМЗ-238', s:'Впуск/Выпуск: 0.25-0.30 мм'},
-                {c:'Зазоры', p:' Cummins 2.8', s:'Впуск 0.25 / Выпуск 0.50'}
+                {t:'OBD: P0300', v:'Пропуски зажигания'}, {t:'OBD: P0171', v:'Бедная смесь'},
+                {t:'Резьба M8', v:'Шаг 1.25 / Сверло 6.8'}, {t:'МТЗ-80', v:'Зазор клапанов 0.25'},
+                {t:'Подшипник 203', v:'17x40x12 мм'}, {t:'Т-40', v:'Давление масла 1.5-3.0'}
+            ],
+            links: [
+                {n:'Google Gemini', u:'https://gemini.google.com'}, {n:'Suno AI', u:'https://suno.com'},
+                {n:'Notebook LM', u:'https://notebooklm.google.com'}, {n:'Бесплатный VPN', u:'https://1.1.1.1'}
+            ],
+            zapovedi: [
+                {t:'ТБ — не догма', d:'Запасных пальцев не выдают.'},
+                {t:'Изолента', d:'Синяя — универсальный клей.'},
+                {t:'Мат', d:'Ускоритель процессов.'},
+                {t:'Лишние детали', d:'Это оптимизация веса.'}
             ],
 
-            init() {
-                lucide.createIcons();
-                this.shufflePrompt();
-                const savedUser = localStorage.getItem('artel_user');
-                if(savedUser) this.user = JSON.parse(savedUser);
-                const savedMsgs = localStorage.getItem('artel_msgs');
-                if(savedMsgs) this.messages = JSON.parse(savedMsgs);
-                this.updateHoliday();
+            initApp() {
+                this.updateCal();
+                this.nextPrompt();
+                this.nextJoke();
+                this.refreshIcons();
+                // Генерируем QR
+                setTimeout(() => {
+                    const qr = qrcode(0, 'M');
+                    qr.addData(window.location.href);
+                    qr.make();
+                    document.getElementById('qrcode').innerHTML = qr.createImgTag(3);
+                }, 500);
             },
 
-            register() {
-                if(!this.tempName) return;
-                this.user = { id: Date.now(), name: this.tempName, rank: 'Личинка инженера' };
-                this.saveUser();
+            refreshIcons() {
+                setTimeout(() => lucide.createIcons(), 50);
             },
 
-            saveUser() {
-                localStorage.setItem('artel_user', JSON.stringify(this.user));
+            updateCal() {
+                const now = new Date();
+                const start = new Date(now.getFullYear(), now.getMonth(), 1);
+                let first = start.getDay(); 
+                first = (first === 0) ? 6 : first - 1; 
+                for (let i = 0; i < first; i++) this.calendar.push({day:''});
+                const total = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+                for (let i = 1; i <= total; i++) {
+                    this.calendar.push({day: i, isToday: i === now.getDate()});
+                }
+                this.holidayInfo = "Сегодня: " + now.toLocaleDateString('ru-RU', {day:'numeric', month:'long'});
             },
 
             sendMsg() {
-                if(!this.newMsg) return;
-                this.messages.push({u: this.user.name, r: this.user.rank, t: this.newMsg});
-                this.newMsg = '';
-                localStorage.setItem('artel_msgs', JSON.stringify(this.messages));
-                setTimeout(() => { document.getElementById('chat').scrollTop = 9999; }, 50);
+                if(this.newMsg) {
+                    this.messages.push({u:'Вы', t:this.newMsg});
+                    this.newMsg = '';
+                    this.$nextTick(() => {
+                        const win = document.getElementById('chat-window');
+                        win.scrollTop = win.scrollHeight;
+                    });
+                }
             },
 
-            shufflePrompt() {
-                const p = ["Ты инженер. Спроектируй пресс из домкрата.", "Ты химик. Как отмыть мазут с рук?", "Ты профи. Напиши инструкцию по замене ГРМ на двигателе K4M."];
-                this.currentPrompt = p[Math.floor(Math.random()*p.length)];
+            nextPrompt() {
+                const ps = ["Сделай обогреватель из ТЭНа и кирпича.", "Как собрать компрессор из холодильника.", "Идея: ЧПУ из мебельных направляющих."];
+                this.prompt = ps[Math.floor(Math.random()*ps.length)];
             },
 
-            updateHoliday() {
-                const holidays = {"01-01":"Новый Год","05-09":"День Победы","07-03":"День Независимости РБ"};
-                const key = new Date().toISOString().slice(5,10);
-                this.holidayInfo = holidays[key] || "Будни в Артели";
-            },
-
-            get filteredData() {
-                return this.techData.filter(d => 
-                    d.p.toLowerCase().includes(this.search.toLowerCase()) || 
-                    d.c.toLowerCase().includes(this.search.toLowerCase())
-                );
+            nextJoke() {
+                const js = ["В гараже нет грязи, есть только антикор.", "Купил запчасть — обмой, а то не приживется.", "Синяя изолента держит лучше сварки."];
+                this.joke = js[Math.floor(Math.random()*js.length)];
             }
-        }));
+         }));
     });
 </script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
 </body>
 </html>
